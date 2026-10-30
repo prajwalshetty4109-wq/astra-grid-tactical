@@ -7,16 +7,16 @@ export default function Document() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <meta
           name="description"
-          content="ASTRA-Grid Tactical: Enterprise AI-Powered Civic Crisis, Hotspot Detection & Explainable Triage Command Center. From Complaints to Action — AI for Civic Impact: Capture, Understand, Reveal, Act."
+          content="CampusFix: From Complaints to Action — AI for Campus Impact: Capture, Understand, Reveal, Act. Smart-facility infrastructure operations platform powered by Gemini 2.5 Flash."
         />
-        <meta name="theme-color" content="#07090E" />
+        <meta name="theme-color" content="#000000" />
       </Head>
-      <body className="bg-obsidian text-slate-200 antialiased selection:bg-tactical-cyan/20 selection:text-tactical-cyan">
+      <body className="bg-black text-neutral-200 antialiased selection:bg-white selection:text-black">
         <Main />
         <NextScript />
       </body>

@@ -22,16 +22,15 @@ export function calculateHaversineDistanceMeters(
   return Math.round(R * c);
 }
 
-// Civic synonym groups for domain-specific text similarity boosting
-const CIVIC_SYNONYMS: Record<string, string[]> = {
-  pothole: ["crater", "road", "tarmac", "asphalt", "hole", "cavity", "skid", "broken"],
-  flood: ["waterlogging", "submerged", "submerging", "standing", "water", "inundated", "flood", "flooding", "ponding"],
-  drain: ["culvert", "gutter", "stormwater", "drainage", "clogged", "blocked", "choked", "sewage"],
-  electrical: ["wire", "feeder", "pillar", "transformer", "sparking", "shock", "electrocution", "live", "current"],
-  waste: ["garbage", "trash", "overflowing", "dump", "bin", "refuse", "litter", "spill"],
-  light: ["streetlight", "lamp", "dark", "illumination", "outage", "led", "pole", "flickering"],
-  water: ["pipe", "pipeline", "leak", "rupture", "pressure", "supply", "burst", "flow"],
-  pedestrian: ["footpath", "walkway", "sidewalk", "pavement", "crossing", "curb", "pedestrian"],
+// Campus facility domain synonym dictionary
+const CAMPUS_SYNONYMS: Record<string, string[]> = {
+  plumbing: ["leak", "pipe", "burst", "drain", "water", "faucet", "restroom", "toilet", "flood", "sewage", "drip", "tap", "sink", "clogged"],
+  electrical: ["sparking", "outlet", "socket", "wire", "breaker", "shock", "voltage", "switch", "short", "plug", "power", "feeder"],
+  it_network: ["wifi", "network", "internet", "wireless", "eduroam", "lan", "connection", "router", "ap", "access", "point", "ethernet", "online"],
+  hvac: ["ac", "aircon", "cooling", "chiller", "ventilation", "heating", "temperature", "duct", "blower", "thermostat", "airflow", "condenser"],
+  sanitation: ["trash", "garbage", "bin", "chute", "odor", "stench", "cleaning", "spill", "restroom", "waste", "overflowing", "dumpster"],
+  furniture: ["chair", "desk", "table", "carrel", "whiteboard", "projector", "podium", "door", "hinge", "lock", "handle", "bench"],
+  hazard: ["danger", "smoke", "fire", "electrocution", "slip", "collapse", "emergency", "arcing", "live"],
 };
 
 /**
@@ -53,21 +52,21 @@ function tokenizeText(text: string): Set<string> {
 }
 
 /**
- * Computes semantic similarity between two texts using token Jaccard + civic synonym cross-matching.
+ * Computes semantic similarity between two texts using token Dice + containment + campus synonym cross-matching.
  * Returns a score between 0.0 and 1.0.
  */
 export function calculateTextSimilarity(textA: string, textB: string): number {
   if (!textA || !textB) return 0;
 
-  const tokensA = tokenizeText(textA);
-  const tokensB = tokenizeText(textB);
+  const tokensA = Array.from(tokenizeText(textA));
+  const tokensBSet = tokenizeText(textB);
 
-  if (tokensA.size === 0 || tokensB.size === 0) return 0;
+  if (tokensA.length === 0 || tokensBSet.size === 0) return 0;
 
   // Direct intersection
   let directMatches = 0;
   for (const token of tokensA) {
-    if (tokensB.has(token)) {
+    if (tokensBSet.has(token)) {
       directMatches++;
     }
   }
@@ -75,10 +74,10 @@ export function calculateTextSimilarity(textA: string, textB: string): number {
   // Synonym assisted matches
   let synonymMatches = 0;
   for (const tokenA of tokensA) {
-    if (!tokensB.has(tokenA)) {
-      for (const [key, group] of Object.entries(CIVIC_SYNONYMS)) {
+    if (!tokensBSet.has(tokenA)) {
+      for (const [key, group] of Object.entries(CAMPUS_SYNONYMS)) {
         if (tokenA === key || group.includes(tokenA)) {
-          const hasSynonymInB = [...tokensB].some(
+          const hasSynonymInB = Array.from(tokensBSet).some(
             (tokenB) => tokenB === key || group.includes(tokenB)
           );
           if (hasSynonymInB) {
@@ -91,8 +90,8 @@ export function calculateTextSimilarity(textA: string, textB: string): number {
   }
 
   const effectiveMatches = directMatches + synonymMatches;
-  const minSize = Math.min(tokensA.size, tokensB.size);
-  const totalTokens = tokensA.size + tokensB.size;
+  const totalTokens = tokensA.length + tokensBSet.size;
+  const minSize = Math.min(tokensA.length, tokensBSet.size);
 
   if (totalTokens === 0) return 0;
   const dice = (2 * effectiveMatches) / totalTokens;
@@ -111,7 +110,7 @@ export interface DuplicateDetectionResult {
 }
 
 /**
- * Identifies duplicate reports within 250m using combined spatial and semantic similarity.
+ * Identifies duplicate campus facility reports within 250m using combined spatial and semantic similarity.
  */
 export function findLikelyDuplicates(
   candidate: {
@@ -131,7 +130,6 @@ export function findLikelyDuplicates(
   const candidateText = `${candidate.title} ${candidate.description}`;
 
   for (const report of existingReports) {
-    // Avoid self-match
     if (candidate.id && report.id === candidate.id) continue;
 
     const distance = calculateHaversineDistanceMeters(
@@ -141,17 +139,17 @@ export function findLikelyDuplicates(
       report.longitude
     );
 
-    // Only compare reports within 250m radius
+    // Campus building radius: within 250m
     if (distance <= 250) {
       const reportText = `${report.title} ${report.description}`;
       const textSim = calculateTextSimilarity(candidateText, reportText);
 
       // Same category gets a boost
       const categoryMatch = candidate.category && report.category === candidate.category;
-      const categoryMultiplier = categoryMatch ? 1.25 : 0.85;
+      const categoryMultiplier = categoryMatch ? 1.3 : 0.85;
 
-      // Spatial decay factor: 1.0 at 0m, 0.7 at 250m
-      const spatialWeight = 1.0 - (distance / 250) * 0.3;
+      // Spatial decay factor: 1.0 at 0m, 0.75 at 250m
+      const spatialWeight = 1.0 - (distance / 250) * 0.25;
 
       const combinedScore = Math.min(1.0, textSim * spatialWeight * categoryMultiplier);
 
@@ -163,13 +161,12 @@ export function findLikelyDuplicates(
     }
   }
 
-  // Threshold for considering a report a likely duplicate
   if (bestMatch && highestSimilarity >= 0.45) {
     return {
       is_likely_duplicate: true,
       matched_duplicate_id: bestMatch.id,
       duplicate_similarity: Math.round(highestSimilarity * 100) / 100,
-      duplicate_reasoning: `Located ${closestDistance}m from ${bestMatch.id} (${bestMatch.title}) with ${(highestSimilarity * 100).toFixed(0)}% semantic/spatial correlation. Corroborates active citizen report.`,
+      duplicate_reasoning: `Located ${closestDistance}m from Ticket #${bestMatch.id} (${bestMatch.title}) with ${(highestSimilarity * 100).toFixed(0)}% semantic/spatial correlation in ${bestMatch.sub_area}. Corroborates active facility maintenance ticket.`,
       distance_meters: closestDistance,
     };
   }
@@ -178,13 +175,13 @@ export function findLikelyDuplicates(
     is_likely_duplicate: false,
     matched_duplicate_id: null,
     duplicate_similarity: highestSimilarity > 0 ? Math.round(highestSimilarity * 100) / 100 : 0,
-    duplicate_reasoning: "No duplicate complaints detected within 250m radius. Registered as a distinct primary incident.",
+    duplicate_reasoning: "No duplicate complaints detected within building corridor. Registered as a distinct primary campus incident.",
     distance_meters: closestDistance !== Infinity ? closestDistance : undefined,
   };
 }
 
 /**
- * Computes deterministic factor-based explainable priority scoring (0-100).
+ * Computes deterministic factor-based explainable priority scoring (0-100) for campus facilities.
  */
 export function computeExplainablePriority(
   report: {
@@ -204,57 +201,58 @@ export function computeExplainablePriority(
 } {
   const combinedText = `${report.title} ${report.description}`.toLowerCase();
 
-  // 1. Safety & Life Risk Score (0-40)
-  let safetyRiskScore = 15; // Baseline
+  // 1. Safety & Hazard Risk Score (0-40)
+  let safetyRiskScore = 15;
   if (
-    report.category === "ELECTRICAL_HAZARD" ||
+    report.category === "ELECTRICAL" ||
     combinedText.includes("live wire") ||
     combinedText.includes("sparking") ||
     combinedText.includes("electrocution") ||
-    combinedText.includes("shock")
+    combinedText.includes("short circuit") ||
+    combinedText.includes("smoke")
   ) {
-    safetyRiskScore = combinedText.includes("water") || combinedText.includes("flood") ? 39 : 35;
+    safetyRiskScore = combinedText.includes("water") || combinedText.includes("leak") ? 39 : 35;
   } else if (
-    combinedText.includes("open manhole") ||
-    combinedText.includes("crater") ||
-    combinedText.includes("deep pothole") ||
-    combinedText.includes("skid") ||
-    combinedText.includes("accident")
+    combinedText.includes("server room") ||
+    combinedText.includes("water leak") ||
+    combinedText.includes("chemical") ||
+    combinedText.includes("gas leak") ||
+    combinedText.includes("ceiling collapse")
   ) {
-    safetyRiskScore = 32;
-  } else if (report.category === "WATERLOGGING" && combinedText.includes("knee-deep")) {
+    safetyRiskScore = 34;
+  } else if (report.category === "PLUMBING" && combinedText.includes("burst")) {
     safetyRiskScore = 28;
-  } else if (report.category === "ROAD_DAMAGE") {
+  } else if (report.category === "HVAC" && combinedText.includes("chiller")) {
     safetyRiskScore = 22;
-  } else if (report.category === "WASTE_OVERFLOW" && combinedText.includes("hospital")) {
-    safetyRiskScore = 24;
-  } else if (report.category === "STREETLIGHT_OUTAGE" && combinedText.includes("dark")) {
-    safetyRiskScore = 18;
-  } else if (report.category === "WATER_SUPPLY" && combinedText.includes("rupture")) {
+  } else if (report.category === "SANITATION" && combinedText.includes("cafeteria")) {
     safetyRiskScore = 22;
+  } else if (report.category === "IT_INFRA" && combinedText.includes("core switch")) {
+    safetyRiskScore = 20;
+  } else if (report.category === "FURNITURE") {
+    safetyRiskScore = 12;
   }
 
-  // 2. Cascade Impact Score (0-25)
+  // 2. Academic & Facility Cascade Impact (0-25)
   let cascadeImpactScore = 10;
+  const isLabOrScience = combinedText.includes("lab") || report.sub_area.toLowerCase().includes("lab") || report.sub_area.toLowerCase().includes("science");
   if (
-    (report.category === "WATERLOGGING" && combinedText.includes("drain")) ||
-    (report.category === "ROAD_DAMAGE" && combinedText.includes("submerged"))
+    (report.category === "PLUMBING" && (combinedText.includes("server") || isLabOrScience)) ||
+    (report.category === "ELECTRICAL" && isLabOrScience)
   ) {
-    cascadeImpactScore = 24;
-  } else if (report.category === "ELECTRICAL_HAZARD" && combinedText.includes("flood")) {
     cascadeImpactScore = 25;
-  } else if (combinedText.includes("culvert") || combinedText.includes("clogged drain")) {
+  } else if (combinedText.includes("exam") || combinedText.includes("lecture hall")) {
     cascadeImpactScore = 23;
-  } else if (combinedText.includes("hospital") || combinedText.includes("ambulance")) {
-    cascadeImpactScore = 21;
-  } else if (report.category === "WATER_SUPPLY" && combinedText.includes("flooding flyover")) {
-    cascadeImpactScore = 22;
+  } else if (report.category === "IT_INFRA" && (combinedText.includes("library") || combinedText.includes("campus-wide"))) {
+    cascadeImpactScore = 24;
+  } else if (report.category === "HVAC" && combinedText.includes("datacenter")) {
+    cascadeImpactScore = 24;
+  } else if (combinedText.includes("dorm") || combinedText.includes("cafeteria")) {
+    cascadeImpactScore = 18;
   } else {
     cascadeImpactScore = 12;
   }
 
-  // 3. Duplicate Volume / Citizen Corroboration Score (0-20)
-  // Count how many reports are within 250m
+  // 3. Duplicate Volume / Student Corroboration Score (0-20)
   const nearbyCount = nearbyReports.filter((r) => {
     const dist = calculateHaversineDistanceMeters(
       report.latitude,
@@ -276,26 +274,30 @@ export function computeExplainablePriority(
     duplicateVolumeScore = 9;
   }
 
-  // 4. Vulnerable Zone Proximity (0-15)
+  // 4. High-Occupancy Zone Proximity (0-15)
   let vulnerabilityScore = 7;
   const areaLower = report.sub_area.toLowerCase() + " " + combinedText;
   if (
-    areaLower.includes("hospital") ||
-    areaLower.includes("school") ||
-    areaLower.includes("ambulance")
+    areaLower.includes("science") ||
+    areaLower.includes("lab") ||
+    areaLower.includes("datacenter")
   ) {
     vulnerabilityScore = 15;
   } else if (
-    areaLower.includes("metro") ||
-    areaLower.includes("station") ||
-    areaLower.includes("transit") ||
-    areaLower.includes("bus bay")
+    areaLower.includes("library") ||
+    areaLower.includes("commons") ||
+    areaLower.includes("auditorium")
   ) {
     vulnerabilityScore = 14;
   } else if (
-    areaLower.includes("flyover") ||
-    areaLower.includes("arterial") ||
-    areaLower.includes("corridor")
+    areaLower.includes("dorm") ||
+    areaLower.includes("hostel") ||
+    areaLower.includes("residential")
+  ) {
+    vulnerabilityScore = 13;
+  } else if (
+    areaLower.includes("cafeteria") ||
+    areaLower.includes("dining")
   ) {
     vulnerabilityScore = 12;
   } else {
@@ -312,11 +314,11 @@ export function computeExplainablePriority(
   else if (priority_score >= 65) priority_level = "HIGH";
   else if (priority_score >= 40) priority_level = "MEDIUM";
 
-  const ai_explanation = `Ranked ${priority_score}/100 (${priority_level}) via multi-factor civic engine: Life Safety (${safetyRiskScore}/40) due to ${
-    safetyRiskScore > 30 ? "immediate physical hazard or electrocution risk" : "pedestrian & vehicular hazard profile"
-  }, Cascade Impact (${cascadeImpactScore}/25) from ${
-    cascadeImpactScore > 20 ? "systemic secondary infrastructure coupling" : "localized sector impact"
-  }, Citizen Corroboration (${duplicateVolumeScore}/20) with ${nearbyCount} verified nearby reports within 250m, and Zone Sensitivity (${vulnerabilityScore}/15) based on proximity to high-density arterial civic transit nodes.`;
+  const ai_explanation = `Ranked ${priority_score}/100 (${priority_level}) via campus facility engine: Safety & Hazard (${safetyRiskScore}/40) due to ${
+    safetyRiskScore > 30 ? "immediate electrical shock or equipment flood danger" : "localized occupant safety risk profile"
+  }, Academic Cascade (${cascadeImpactScore}/25) from ${
+    cascadeImpactScore > 20 ? "severe disruption to scheduled lectures, labs, or campus IT backbone" : "contained room-level impact"
+  }, Student Corroboration (${duplicateVolumeScore}/20) with ${nearbyCount} verified reports in the building wing, and High-Occupancy Zone Sens. (${vulnerabilityScore}/15) based on critical university infrastructure sensitivity.`;
 
   return {
     priority_score,
@@ -332,7 +334,7 @@ export function computeExplainablePriority(
 }
 
 /**
- * Spatially groups reports within 300m into multi-issue Hotspot Clusters.
+ * Spatially groups reports within 250m into multi-issue Building Clusters.
  */
 export function detectGeographicClusters(reports: CivicReport[]): HotspotCluster[] {
   const visited = new Set<string>();
@@ -341,7 +343,6 @@ export function detectGeographicClusters(reports: CivicReport[]): HotspotCluster
   for (const report of reports) {
     if (visited.has(report.id)) continue;
 
-    // Find all interconnected reports within 300m
     const clusterReports: CivicReport[] = [report];
     visited.add(report.id);
 
@@ -355,13 +356,12 @@ export function detectGeographicClusters(reports: CivicReport[]): HotspotCluster
         other.longitude
       );
 
-      if (dist <= 300) {
+      if (dist <= 250) {
         clusterReports.push(other);
         visited.add(other.id);
       }
     }
 
-    // Only identify as a hotspot cluster if 3 or more reports cluster together
     if (clusterReports.length >= 3) {
       const avgLat =
         clusterReports.reduce((sum, r) => sum + r.latitude, 0) / clusterReports.length;
@@ -383,18 +383,17 @@ export function detectGeographicClusters(reports: CivicReport[]): HotspotCluster
         Math.round(maxPriority * 0.7 + clusterReports.length * 3 + criticalCount * 4)
       );
 
-      // Determine corridor name from sub_area
-      const primaryArea = clusterReports[0].sub_area || "Urban Corridor";
+      const primaryArea = clusterReports[0].sub_area || "Campus Building";
       const clusterId = `HOTSPOT-${clusters.length + 1}`;
 
       clusters.push({
         id: clusterId,
-        title: `${primaryArea} Hotspot Cluster`,
+        title: `${primaryArea} Multi-Issue Cluster`,
         centroid: {
           latitude: Number(avgLat.toFixed(6)),
           longitude: Number(avgLon.toFixed(6)),
         },
-        radiusMeters: Math.max(80, Math.round(maxDist)),
+        radiusMeters: Math.max(60, Math.round(maxDist)),
         reportCount: clusterReports.length,
         criticalCount,
         categories,
@@ -405,6 +404,5 @@ export function detectGeographicClusters(reports: CivicReport[]): HotspotCluster
     }
   }
 
-  // Sort clusters by composite risk descending
   return clusters.sort((a, b) => b.compositeRiskScore - a.compositeRiskScore);
 }

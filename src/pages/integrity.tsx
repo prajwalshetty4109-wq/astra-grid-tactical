@@ -8,8 +8,7 @@ import {
   Layers,
   Sparkles,
   GitMerge,
-  Compass,
-  ArrowRight,
+  Building2,
   Database,
   Calculator,
 } from "lucide-react";
@@ -18,74 +17,74 @@ export default function IntegrityPage() {
   return (
     <>
       <Head>
-        <title>AI Methodology, Limitations & Honesty Note | ASTRA-Grid Tactical</title>
+        <title>AI Methodology, Limitations & Honesty Note | CampusFix</title>
       </Head>
 
       <TacticalNavbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8">
         {/* Header */}
-        <div className="border-b border-slate-800 pb-4">
-          <div className="flex items-center gap-2 text-tactical-cyan font-mono text-xs uppercase tracking-wider mb-1">
+        <div className="border-b border-white/10 pb-4">
+          <div className="flex items-center gap-2 text-white font-mono text-xs uppercase tracking-wider mb-1 font-semibold">
             <ShieldCheck className="w-4 h-4" />
             Methodology & Ethical AI Compliance • Hackathon Sections 7 & 8
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
             AI Engine Architecture, Limitations & Honesty Matrix
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 font-sans leading-relaxed">
-            ASTRA-Grid Tactical operates with complete mathematical and architectural transparency. We explicitly state what is powered by live production APIs, what is synthetically modeled for the hackathon, where the AI model can make mistakes, and how we mitigate hallucination risks.
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1 font-sans leading-relaxed">
+            CampusFix is built with complete mathematical and operational transparency. We explicitly document what is powered by live production APIs, what is synthetically modeled for the hackathon, where the AI model can make mistakes, and how we mitigate hallucination risks.
           </p>
         </div>
 
         {/* Section 1: Real vs Mocked Matrix */}
         <section aria-labelledby="real-vs-mocked" className="flex flex-col gap-3">
           <h2 id="real-vs-mocked" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <Database className="w-4 h-4 text-tactical-cyan" />
+            <Database className="w-4 h-4 text-white" />
             1. Production Reality vs. Synthetic Hackathon Modeling
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* What is Real */}
-            <div className="rounded-xl border border-tactical-emerald/40 bg-emerald-950/15 p-5 flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-tactical-emerald font-mono text-xs font-bold uppercase tracking-wider">
+            <div className="rounded-2xl border border-white/20 bg-neutral-950 p-6 flex flex-col gap-3 shadow-3d-card">
+              <div className="flex items-center gap-2 text-white font-mono text-xs font-bold uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4" />
                 What is Real & Production-Executed
               </div>
-              <ul className="text-xs text-slate-200 font-sans space-y-2 leading-relaxed">
+              <ul className="text-xs text-neutral-300 font-sans space-y-2.5 leading-relaxed">
                 <li>
-                  <strong className="text-white font-mono">Live Google Gen AI SDK:</strong> Production invocation of <code className="text-tactical-cyan bg-slate-900 px-1 py-0.5 rounded">gemini-2.5-flash</code> via the official <code className="text-tactical-cyan bg-slate-900 px-1 py-0.5 rounded">@google/genai</code> TypeScript SDK for multimodal triage, duplicate reasoning, and 60s executive action briefs.
+                  <strong className="text-white font-mono">Live Google Gen AI SDK:</strong> Production invocation of <code className="text-white bg-neutral-900 px-1 py-0.5 rounded border border-white/10">gemini-2.5-flash</code> via the official <code className="text-white bg-neutral-900 px-1 py-0.5 rounded border border-white/10">@google/genai</code> TypeScript SDK for multimodal triage, duplicate reasoning, and 60s maintenance action briefs.
                 </li>
                 <li>
-                  <strong className="text-white font-mono">Real Haversine Distance Math:</strong> Deterministic spherical trigonometry (<code className="text-tactical-cyan font-mono">R = 6,371,000m</code>) accurately calculating great-circle distance down to the meter.
+                  <strong className="text-white font-mono">Real Haversine Distance Math:</strong> Deterministic spherical trigonometry (<code className="text-white font-mono">R = 6,371,000m</code>) calculating building distances down to the meter.
                 </li>
                 <li>
-                  <strong className="text-white font-mono">Real Token & Synonym Duplicate Detection:</strong> Combined token Dice coefficient, Jaccard intersection, and 8 civic synonym dictionaries (pothole/crater, flood/waterlogging, electrical/feeder).
+                  <strong className="text-white font-mono">Real Token & Synonym Duplicate Detection:</strong> Combined token Dice coefficient, containment index, and 7 campus facility synonym dictionaries (plumbing/leak, electrical/sparking, it_network/wifi, hvac/cooling).
                 </li>
                 <li>
-                  <strong className="text-white font-mono">Zod Schema Validation:</strong> Strict runtime validation on all incoming API requests and database models.
+                  <strong className="text-white font-mono">Strict Zod Schema Validation:</strong> Strict runtime validation on all incoming API requests and work order models.
                 </li>
                 <li>
-                  <strong className="text-white font-mono">Resilient Dual-Tier Storage:</strong> Real Supabase PostgreSQL database support with automatic graceful fallback to in-memory/localStorage store so the app never crashes if cloud keys are offline.
+                  <strong className="text-white font-mono">Resilient Dual-Tier Storage:</strong> Real Supabase PostgreSQL database support with automatic graceful fallback to in-memory/localStorage store so the platform operates continuously on Vercel even if database keys are uninitialized.
                 </li>
               </ul>
             </div>
 
             {/* What is Mocked / Synthetic */}
-            <div className="rounded-xl border border-tactical-amber/40 bg-amber-950/15 p-5 flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-tactical-amber font-mono text-xs font-bold uppercase tracking-wider">
+            <div className="rounded-2xl border border-white/20 bg-neutral-950 p-6 flex flex-col gap-3 shadow-3d-card">
+              <div className="flex items-center gap-2 text-white font-mono text-xs font-bold uppercase tracking-wider">
                 <AlertTriangle className="w-4 h-4" />
                 What is Synthetic / Simulated
               </div>
-              <ul className="text-xs text-slate-200 font-sans space-y-2 leading-relaxed">
+              <ul className="text-xs text-neutral-300 font-sans space-y-2.5 leading-relaxed">
                 <li>
-                  <strong className="text-white font-mono">36 Pre-Seeded Citizen Reports:</strong> Generated deterministic civic reports reflecting authentic Bengaluru municipal challenges (MG Road Metro, Jayanagar Hospital, Hebbal Flyover).
+                  <strong className="text-white font-mono">36 Pre-Seeded Campus Tickets:</strong> Deterministic synthetic reports reflecting authentic university maintenance challenges (Science Block, Central Library, Student Dorms, Engineering Wing, Cafeteria, Admin).
                 </li>
                 <li>
-                  <strong className="text-white font-mono">Field Crew GPS Telemetry:</strong> Simulated repair trucks and hydro-jetting units on the radar canvas (in a full deployment, this feeds from municipal vehicle AVL/GPS trackers).
+                  <strong className="text-white font-mono">Technician Dispatch ETA:</strong> Simulated repair van locations and on-site crew status (in production, integrated with campus facility work order dispatch systems).
                 </li>
                 <li>
-                  <strong className="text-white font-mono">Simulated Masked Phone Numbers:</strong> Phone numbers are masked (<code className="text-slate-400 font-mono">***-***-4821</code>) to demonstrate citizen privacy protection compliant with civic data guidelines.
+                  <strong className="text-white font-mono">Masked Student IDs:</strong> Student IDs are masked (<code className="text-neutral-400 font-mono">STU-***-4821</code>) to demonstrate student privacy protection compliant with FERPA and campus data policies.
                 </li>
               </ul>
             </div>
@@ -95,42 +94,42 @@ export default function IntegrityPage() {
         {/* Section 2: Transparent Priority Formula */}
         <section aria-labelledby="priority-formula" className="flex flex-col gap-3">
           <h2 id="priority-formula" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <Calculator className="w-4 h-4 text-tactical-cyan" />
+            <Calculator className="w-4 h-4 text-white" />
             2. The Explainable Priority Formula (0 to 100)
           </h2>
 
-          <div className="rounded-xl border border-slate-800 bg-obsidian-900/95 p-5 flex flex-col gap-4 font-mono text-xs">
-            <div className="p-3 rounded-lg bg-obsidian-950 border border-tactical-cyan/40 text-center font-bold text-tactical-cyan text-sm">
+          <div className="rounded-2xl border border-white/15 bg-neutral-950 p-6 flex flex-col gap-4 font-mono text-xs shadow-3d-card">
+            <div className="p-3.5 rounded-xl bg-black border border-white/20 text-center font-bold text-white text-sm shadow-sm">
               PriorityScore = SafetyRisk (0–40) + CascadeImpact (0–25) + DuplicateVolume (0–20) + VulnerableZone (0–15)
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-300 font-sans">
-              <div className="p-3 rounded bg-obsidian-950 border border-slate-800">
-                <strong className="text-tactical-crimson font-mono block text-xs mb-1">
-                  1. Safety & Life Risk Score (0–40)
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-neutral-300 font-sans">
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-white/10">
+                <strong className="text-white font-mono block text-xs mb-1 font-bold">
+                  1. Safety & Hazard Risk Score (0–40)
                 </strong>
-                Evaluates immediate physical threat to human life. Live electrical wires submerged in floodwater score 39–40; high-speed expressway craters score 35–38; routine garbage collection delays score 8–12.
+                Evaluates immediate physical danger to students and lab personnel. Sparking 220V outlets submerged in water score 39–40; server room water leaks score 34–38; minor furniture armrest looseness scores 8–12.
               </div>
 
-              <div className="p-3 rounded bg-obsidian-950 border border-slate-800">
-                <strong className="text-tactical-amber font-mono block text-xs mb-1">
-                  2. Infrastructure Cascade Impact (0–25)
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-white/10">
+                <strong className="text-white font-mono block text-xs mb-1 font-bold">
+                  2. Academic & Facility Cascade Impact (0–25)
                 </strong>
-                Quantifies the probability that this failure triggers secondary domino collapses (e.g. blocked storm drain culvert backing up into road surface erosion and submerging electrical junction boxes).
+                Quantifies the probability of cascading disruption to scheduled lectures, lab experiments, or campus core IT (e.g. chiller line break leaking into server racks and disabling lecture hall AV during exams).
               </div>
 
-              <div className="p-3 rounded bg-obsidian-950 border border-slate-800">
-                <strong className="text-tactical-cyan font-mono block text-xs mb-1">
-                  3. Duplicate Volume / Citizen Multiplier (0–20)
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-white/10">
+                <strong className="text-white font-mono block text-xs mb-1 font-bold">
+                  3. Duplicate Volume / Student Corroboration (0–20)
                 </strong>
-                Counts corroborating citizen complaints within 250m. 1 report = 6 pts; 2–3 reports = 13 pts; 4–5 reports = 17 pts; 6+ independent reports = 20 pts.
+                Counts independent student complaints within the building corridor (0 dups = 6 pts, 1–2 = 13 pts, 3–4 = 17 pts, 6+ = 20 pts).
               </div>
 
-              <div className="p-3 rounded bg-obsidian-950 border border-slate-800">
-                <strong className="text-tactical-emerald font-mono block text-xs mb-1">
-                  4. Vulnerable Zone Proximity (0–15)
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-white/10">
+                <strong className="text-white font-mono block text-xs mb-1 font-bold">
+                  4. High-Occupancy Zone Sensitivity (0–15)
                 </strong>
-                Proximity to hospitals (emergency ambulance lanes), schools (child drop-off zones), metro transit stations, and arterial flyovers.
+                Proximity to research wet labs, Central Library quiet commons, Student Dorms, and main dining halls.
               </div>
             </div>
           </div>
@@ -139,42 +138,42 @@ export default function IntegrityPage() {
         {/* Section 3: Where the AI Can Be Wrong */}
         <section aria-labelledby="ai-failure-modes" className="flex flex-col gap-3">
           <h2 id="ai-failure-modes" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-tactical-amber" />
-            3. Where the AI Can Be Wrong (Failure Modes & Mitigation)
+            <AlertTriangle className="w-4 h-4 text-white" />
+            3. Where the AI Can Be Wrong (Failure Modes & Mitigations)
           </h2>
 
-          <div className="rounded-xl border border-slate-800 bg-obsidian-900/95 p-5 flex flex-col gap-3 font-sans text-xs">
+          <div className="rounded-2xl border border-white/15 bg-neutral-950 p-6 flex flex-col gap-3 font-sans text-xs shadow-3d-card">
             <div className="space-y-3">
-              <div className="p-3 rounded bg-obsidian-950 border border-slate-800">
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-white/10">
                 <strong className="text-white font-mono text-xs block mb-1">
-                  Edge Case A: False Duplicate Merges Across Parallel Streets
+                  Edge Case A: Vertical Floor Separation in Multi-Story Buildings
                 </strong>
-                <p className="text-slate-300 leading-relaxed">
-                  Two potholes located 80 meters apart might be on separate parallel roads separated by a railway wall. Pure Haversine distance would treat them as proximate.
+                <p className="text-neutral-300 leading-relaxed">
+                  Two plumbing leaks reported at identical lat/lon coordinates might be on Floor 1 and Floor 4. Pure 2D horizontal Haversine distance would treat them as identical incidents.
                   <br />
-                  <span className="text-tactical-cyan font-mono font-semibold">Mitigation:</span> We require street name token cross-matching and permit human decision-makers to unmerge duplicate recommendations with 1 click.
+                  <span className="text-white font-mono font-bold">Mitigation:</span> We enforce room and floor number token cross-matching and provide a 1-click override to unmerge separate floor complaints.
                 </p>
               </div>
 
-              <div className="p-3 rounded bg-obsidian-950 border border-slate-800">
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-white/10">
                 <strong className="text-white font-mono text-xs block mb-1">
-                  Edge Case B: Citizen Hyperbole & Text Exaggeration
+                  Edge Case B: Student Language Exaggeration
                 </strong>
-                <p className="text-slate-300 leading-relaxed">
-                  Citizens frequently write &quot;the entire street is destroyed&quot; when describing a single paver block wobble.
+                <p className="text-neutral-300 leading-relaxed">
+                  Students may describe a dripping water fountain as &quot;the entire cafeteria is completely flooded.&quot;
                   <br />
-                  <span className="text-tactical-cyan font-mono font-semibold">Mitigation:</span> Multimodal photo verification through Gemini Vision cross-checks image pixels against text claims to moderate over-inflated severity claims.
+                  <span className="text-white font-mono font-bold">Mitigation:</span> Multimodal photo analysis via Gemini Vision validates physical severity against text claims before calculating priority.
                 </p>
               </div>
 
-              <div className="p-3 rounded bg-obsidian-950 border border-slate-800">
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-white/10">
                 <strong className="text-white font-mono text-xs block mb-1">
-                  Edge Case C: Night-Time Low-Light Image Ambiguity
+                  Edge Case C: Low-Light Basement Ambiguity
                 </strong>
-                <p className="text-slate-300 leading-relaxed">
-                  Grainy low-resolution nighttime photos can make wet asphalt puddles look identical to black motor oil spills.
+                <p className="text-neutral-300 leading-relaxed">
+                  Grainy low-light photos in mechanical dorm basements can make harmless condensation puddles look like hazardous oil leaks.
                   <br />
-                  <span className="text-tactical-cyan font-mono font-semibold">Mitigation:</span> Gemini returns a confidence rating and explicitly flags low-light ambiguity for human dispatch verification.
+                  <span className="text-white font-mono font-bold">Mitigation:</span> Gemini tags low-light ambiguity for mandatory technician physical inspection prior to crew dispatch.
                 </p>
               </div>
             </div>
@@ -184,36 +183,36 @@ export default function IntegrityPage() {
         {/* Section 4: What We Would Build Next */}
         <section aria-labelledby="roadmap" className="flex flex-col gap-3">
           <h2 id="roadmap" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-tactical-cyan" />
+            <Sparkles className="w-4 h-4 text-white" />
             4. Production Roadmap: What We Would Build Next
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-            <div className="p-3.5 rounded-lg bg-obsidian-950 border border-slate-800">
-              <strong className="text-white block mb-1">1. Official Municipal GIS Polygons</strong>
-              <p className="text-slate-400 font-sans">
-                Replace circular distance radius with actual cadastre street centerlines and storm drain pipe flow vectors.
+            <div className="p-4 rounded-xl bg-neutral-950 border border-white/15 shadow-3d-subtle">
+              <strong className="text-white block mb-1">1. Campus BACnet / BMS Sensor Integration</strong>
+              <p className="text-neutral-400 font-sans">
+                Automatically ingest telemetry from building HVAC chillers, water pressure flowmeters, and electrical sub-meters.
               </p>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-obsidian-950 border border-slate-800">
-              <strong className="text-white block mb-1">2. Citizen WhatsApp / SMS Webhooks</strong>
-              <p className="text-slate-400 font-sans">
-                Direct intake via messaging apps with automatic voice note transcription using Gemini Audio models.
+            <div className="p-4 rounded-xl bg-neutral-950 border border-white/15 shadow-3d-subtle">
+              <strong className="text-white block mb-1">2. Student WhatsApp & Slack Bot Webhook</strong>
+              <p className="text-neutral-400 font-sans">
+                Enable instant complaint submission and progress notifications directly inside university campus channels.
               </p>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-obsidian-950 border border-slate-800">
-              <strong className="text-white block mb-1">3. Fleet Dashcam Edge Ingestion</strong>
-              <p className="text-slate-400 font-sans">
-                Mount edge AI cameras on municipal garbage collection trucks to continuously scan and auto-report road damage.
+            <div className="p-4 rounded-xl bg-neutral-950 border border-white/15 shadow-3d-subtle">
+              <strong className="text-white block mb-1">3. Facility Inventory & Parts Management</strong>
+              <p className="text-neutral-400 font-sans">
+                Automatically check storeroom inventory for required replacement parts (e.g. copper pipe sleeves, breakers, Cisco APs).
               </p>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-obsidian-950 border border-slate-800">
-              <strong className="text-white block mb-1">4. Contractor SLA Audit Trail</strong>
-              <p className="text-slate-400 font-sans">
-                Before-and-after photo diffing to prevent fraudulent municipal repair billing and closeouts.
+            <div className="p-4 rounded-xl bg-neutral-950 border border-white/15 shadow-3d-subtle">
+              <strong className="text-white block mb-1">4. Work Order Verification & Sign-off</strong>
+              <p className="text-neutral-400 font-sans">
+                Before-and-after photo diffing to ensure contracted technicians fully resolved the issue before closing tickets.
               </p>
             </div>
           </div>

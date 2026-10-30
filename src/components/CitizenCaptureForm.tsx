@@ -10,8 +10,8 @@ import {
   CheckCircle2,
   GitMerge,
   ArrowRight,
-  ShieldAlert,
-  Compass,
+  Building2,
+  Cpu,
 } from "lucide-react";
 
 interface CitizenCaptureFormProps {
@@ -21,9 +21,9 @@ interface CitizenCaptureFormProps {
 export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialDemo = false }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<CivicCategory>("WATERLOGGING");
-  const [subArea, setSubArea] = useState("Sector 1: MG Road Metro Corridor");
-  const [address, setAddress] = useState("MG Road Metro Gate 2 Boulevard");
+  const [category, setCategory] = useState<CivicCategory>("PLUMBING");
+  const [subArea, setSubArea] = useState("Science Block Wing B");
+  const [address, setAddress] = useState("Room 304, 3rd Floor Lab Corridor");
   const [latitude, setLatitude] = useState(12.97565);
   const [longitude, setLongitude] = useState(77.60688);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -34,51 +34,65 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
   const presets = [
     {
-      name: "Sector 1: MG Road Metro",
-      subArea: "Sector 1: MG Road Metro Corridor",
-      address: "MG Road Metro Gate 2 Boulevard",
+      name: "Science Block Wing B",
+      subArea: "Science Block Wing B",
+      address: "Room 304, 3rd Floor Chem Lab",
       lat: 12.97565,
       lon: 77.60688,
     },
     {
-      name: "Sector 2: Jayanagar Hospital",
-      subArea: "Sector 2: Jayanagar Civic Hospital Zone",
-      address: "Emergency Gate 1, Jayanagar General Hospital",
+      name: "Central Library Commons",
+      subArea: "Central Library Commons",
+      address: "2nd Floor Main Study Hall",
       lat: 12.92512,
       lon: 77.59385,
     },
     {
-      name: "Sector 3: Hebbal Flyover",
-      subArea: "Sector 3: Hebbal Arterial Flyover",
-      address: "Hebbal Flyover Fast Lane Descent",
+      name: "Student Dorms Block C",
+      subArea: "Student Dorms Block C",
+      address: "4th Floor Shower Bay & Lounge",
       lat: 13.03585,
       lon: 77.59705,
     },
     {
-      name: "Sector 4: Indiranagar",
-      subArea: "Sector 4: Indiranagar 100ft Cross",
-      address: "100ft Road, opposite KFC",
+      name: "Engineering Wing",
+      subArea: "Engineering Wing",
+      address: "Lecture Hall 102 Podium",
       lat: 12.9784,
       lon: 77.6408,
+    },
+    {
+      name: "Main Cafeteria",
+      subArea: "Main Cafeteria",
+      address: "Drink Station 2, Dining Hall",
+      lat: 12.9352,
+      lon: 77.6245,
+    },
+    {
+      name: "Admin Hub",
+      subArea: "Admin Hub",
+      address: "Registrar Window 3, 1st Floor",
+      lat: 12.9841,
+      lon: 77.7521,
     },
   ];
 
   const hazardPhotoPresets = [
     {
-      label: "Live Wire in Flood",
+      label: "Lab Water Leak",
+      url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80",
+    },
+    {
+      label: "Sparking Lab Outlet",
       url: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?auto=format&fit=crop&w=600&q=80",
     },
     {
-      label: "Deep Road Crater",
-      url: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=600&q=80",
+      label: "Offline Wi-Fi AP",
+      url: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
     },
     {
-      label: "Clogged Culvert Overflow",
+      label: "Broken AC Ceiling Vent",
       url: "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-      label: "Hospital Waste Spill",
-      url: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?auto=format&fit=crop&w=600&q=80",
     },
   ];
 
@@ -90,13 +104,13 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
   };
 
   const handleAutoFillDemo = () => {
-    setTitle("Exposed live wire sparking in knee-deep floodwater outside Metro Gate 2");
+    setTitle("Overhead ceiling pipe rupture leaking onto lab electronics and sparking outlet");
     setDescription(
-      "URGENT: A roadside junction box has its door ripped open and live wires are submerged in standing stormwater right where commuters walk down from the metro escalator. Heavy arcing and smoke observed!"
+      "URGENT: Chilled water pipe in Science Block Room 304 has burst open. Pressurized water is dripping directly into wall power outlets and calibrated spectrometry equipment. Sparks and smoke visible!"
     );
-    setCategory("ELECTRICAL_HAZARD");
-    setSubArea("Sector 1: MG Road Metro Corridor");
-    setAddress("MG Road Metro Gate 2 Escalator Walkway");
+    setCategory("ELECTRICAL");
+    setSubArea("Science Block Wing B");
+    setAddress("Room 304, East Wall Bench 3, Science Block");
     setLatitude(12.97561);
     setLongitude(77.60691);
     setImagePreview("https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?auto=format&fit=crop&w=600&q=80");
@@ -150,11 +164,11 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
       if (data.success && data.triageReceipt) {
         setSubmissionReceipt(data.triageReceipt);
       } else {
-        setErrorMsg(data.error || "Failed to process citizen report intake");
+        setErrorMsg(data.error || "Failed to process campus report intake");
       }
     } catch (err: any) {
       console.error("Submission failed:", err);
-      setErrorMsg(err.message || "Network error submitting citizen report");
+      setErrorMsg(err.message || "Network error submitting campus report");
     } finally {
       setIsSubmitting(false);
     }
@@ -163,44 +177,44 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
   return (
     <div className="w-full max-w-3xl mx-auto flex flex-col gap-6">
       {/* 1-Tap Judge Demo Scenario Button */}
-      <div className="p-3.5 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-obsidian-900 to-cyan-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-cyan-glow">
+      <div className="p-4 rounded-xl border border-white/20 bg-neutral-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-3d-card">
         <div className="flex items-center gap-2.5">
-          <Sparkles className="w-4 h-4 text-tactical-cyan animate-spin" />
+          <Sparkles className="w-4 h-4 text-white animate-spin" />
           <div>
-            <div className="font-mono text-xs font-bold text-tactical-cyan">
+            <div className="font-mono text-xs font-bold text-white">
               JUDGE 15-SECOND SPEED DEMO
             </div>
-            <p className="text-[11px] text-slate-300">
-              Auto-fill urgent flood + sparking feeder box scenario at MG Road Metro.
+            <p className="text-[11px] text-neutral-400">
+              Auto-fill urgent Science Lab water leak & sparking outlet scenario.
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={handleAutoFillDemo}
-          className="px-3 py-1.5 rounded-lg bg-tactical-cyan text-obsidian-950 hover:bg-cyan-300 font-mono text-xs font-bold tracking-wider transition"
+          className="px-4 py-2 rounded-lg bg-white text-black hover:bg-neutral-200 font-mono text-xs font-bold tracking-wider transition shadow-[0_2px_10px_rgba(255,255,255,0.2)]"
         >
           Auto-Fill Urgent Scenario
         </button>
       </div>
 
-      {/* Main Intake Card */}
-      <div className="rounded-xl border border-slate-800 bg-obsidian-900/95 p-5 sm:p-7 shadow-2xl reticle-corner">
-        <div className="border-b border-slate-800/80 pb-4 mb-5">
-          <div className="flex items-center gap-2 text-tactical-cyan font-mono text-xs font-semibold tracking-wider uppercase mb-1">
+      {/* Main Campus Intake Card */}
+      <div className="rounded-2xl border border-white/15 bg-neutral-950 p-6 sm:p-8 shadow-3d-card reticle-corner-white">
+        <div className="border-b border-white/10 pb-4 mb-5">
+          <div className="flex items-center gap-2 text-white font-mono text-xs font-bold tracking-wider uppercase mb-1">
             <Camera className="w-3.5 h-3.5" />
-            Stage 1 • Rapid Citizen Incident Intake (&lt;60 Seconds)
+            Stage 1 • Rapid Campus Incident Intake (&lt;60 Seconds)
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            Report Civic Hazard or Infrastructure Failure
+            Report Campus Facility or Equipment Failure
           </h1>
-          <p className="text-xs text-slate-400 mt-1 font-sans">
-            Your report is processed in real time by our Gemini 2.5 Flash Triage Engine, checked against nearby complaints to prevent duplicate dispatch, and ranked by transparent life-safety math.
+          <p className="text-xs text-neutral-400 mt-1 font-sans">
+            Your ticket is analyzed by Gemini 2.5 Flash, cross-checked against adjacent building complaints to prevent duplicate crew dispatches, and prioritized by transparent safety and academic impact math.
           </p>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-lg bg-tactical-crimson/20 border border-tactical-crimson/50 text-tactical-crimson text-xs font-mono">
+          <div className="mb-4 p-3 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono">
             {errorMsg}
           </div>
         )}
@@ -209,149 +223,145 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs font-mono">
           {/* Issue Title */}
           <div>
-            <label className="block text-slate-300 uppercase tracking-wider mb-1">
-              Issue Summary / Headline *
+            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+              Issue Headline / Summary *
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Clogged culvert causing knee-deep waterlogging"
-              className="w-full px-3 py-2 rounded-lg bg-obsidian-950 border border-slate-800 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-tactical-cyan font-sans text-xs"
+              placeholder="e.g. Chilled water pipe leaking over lab equipment"
+              className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-white font-sans text-xs"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-slate-300 uppercase tracking-wider mb-1">
-              Detailed Field Description *
+            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+              Detailed Description *
             </label>
             <textarea
               required
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe what you see: depth of water, size of crater, arcing electrical wires, blocked hospital access, etc."
-              className="w-full px-3 py-2 rounded-lg bg-obsidian-950 border border-slate-800 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-tactical-cyan font-sans text-xs"
+              placeholder="Describe the issue: water volume, sparking wires, room temperature, network AP status, student safety hazard, etc."
+              className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-white font-sans text-xs"
             />
           </div>
 
-          {/* Civic Category Selector */}
+          {/* Facility Category Selector */}
           <div>
-            <label className="block text-slate-300 uppercase tracking-wider mb-1">
-              Primary Civic Category
+            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+              Facility Category
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as CivicCategory)}
-              className="w-full px-3 py-2 rounded-lg bg-obsidian-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-tactical-cyan"
+              className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white focus:outline-none focus:border-white text-xs"
             >
-              <option value="WATERLOGGING">WATERLOGGING (Flooding, Clogged Drains, Culvert Backups)</option>
-              <option value="ROAD_DAMAGE">ROAD_DAMAGE (Potholes, Asphalt Craters, Collapsed Lanes)</option>
-              <option value="ELECTRICAL_HAZARD">ELECTRICAL_HAZARD (Sparking Feeders, Exposed Live Wires)</option>
-              <option value="WASTE_OVERFLOW">WASTE_OVERFLOW (Overflowing Municipal Dumpsters, Refuse Spills)</option>
-              <option value="STREETLIGHT_OUTAGE">STREETLIGHT_OUTAGE (Dark Crossings, Broken Poles)</option>
-              <option value="WATER_SUPPLY">WATER_SUPPLY (Ruptured Mains, Pipe Blowouts, Low Pressure)</option>
+              <option value="PLUMBING">PLUMBING (Pipe Leaks, Restroom Drains & Chilled Water Risers)</option>
+              <option value="ELECTRICAL">ELECTRICAL (Sparking Sockets, Breakers & High-Voltage Lab Power)</option>
+              <option value="IT_INFRA">IT_INFRA (Wi-Fi Access Points, Classroom AV & Network Switches)</option>
+              <option value="HVAC">HVAC (Cooling Chillers, Lab Ventilation & Aircon Blowers)</option>
+              <option value="SANITATION">SANITATION (Trash Chutes, Pest Control, Refuse & Disinfection)</option>
+              <option value="FURNITURE">FURNITURE (Classroom Chairs, Desks, Doors, Locks & Podium Hardware)</option>
             </select>
           </div>
 
-          {/* Location 1-Tap Presets */}
+          {/* Location Quick Presets */}
           <div>
-            <label className="block text-slate-300 uppercase tracking-wider mb-1 flex items-center justify-between">
-              <span>Location Quick-Presets</span>
-              <span className="text-slate-500 font-normal">Click to set coordinates</span>
+            <label className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold flex items-center justify-between">
+              <span>Campus Building Quick-Presets</span>
+              <span className="text-neutral-500 font-normal">Click to set location</span>
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {presets.map((p) => (
                 <button
                   key={p.name}
                   type="button"
                   onClick={() => handleApplyPreset(p)}
-                  className={`p-2 rounded-lg border text-left text-[11px] transition ${
+                  className={`p-2.5 rounded-lg border text-left text-[11px] transition ${
                     subArea === p.subArea
-                      ? "bg-slate-800 border-tactical-cyan text-tactical-cyan"
-                      : "bg-obsidian-950 border-slate-800 text-slate-400 hover:text-slate-200"
+                      ? "bg-white text-black border-white font-bold shadow-sm"
+                      : "bg-black border-white/10 text-neutral-400 hover:text-white hover:border-white/25"
                   }`}
                 >
-                  <div className="font-bold truncate">{p.name.split(":")[1]?.trim() || p.name}</div>
-                  <div className="text-[10px] text-slate-500">
-                    {p.lat.toFixed(3)}, {p.lon.toFixed(3)}
-                  </div>
+                  <div className="truncate">{p.name}</div>
+                  <div className="text-[10px] opacity-70 truncate">{p.address}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Address & Coordinates */}
+          {/* Building & Room Address */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2">
-              <label className="block text-slate-300 uppercase tracking-wider mb-1">
-                Street Address *
+              <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+                Room / Floor Address *
               </label>
               <input
                 type="text"
                 required
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="e.g. Opposite Metro Gate 2, MG Road"
-                className="w-full px-3 py-2 rounded-lg bg-obsidian-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-tactical-cyan font-sans text-xs"
+                placeholder="e.g. Room 304, 3rd Floor Lab Corridor"
+                className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white focus:outline-none focus:border-white font-sans text-xs"
               />
             </div>
             <div>
-              <label className="block text-slate-300 uppercase tracking-wider mb-1">
-                Sector / Sub-Area
+              <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+                Campus Building Wing
               </label>
               <input
                 type="text"
                 required
                 value={subArea}
                 onChange={(e) => setSubArea(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-obsidian-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-tactical-cyan font-sans text-xs"
+                className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white focus:outline-none focus:border-white font-sans text-xs"
               />
             </div>
           </div>
 
-          {/* Lat / Lon Coordinate Inputs */}
-          <div className="grid grid-cols-2 gap-3 p-2.5 rounded-lg bg-obsidian-950 border border-slate-800">
+          {/* Coordinate Telemetry */}
+          <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-black border border-white/10">
             <div>
-              <label className="block text-slate-400 text-[10px] uppercase mb-0.5">Latitude</label>
+              <label className="block text-neutral-400 text-[10px] uppercase mb-0.5">Latitude</label>
               <input
                 type="number"
                 step="any"
                 required
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                className="w-full px-2 py-1 rounded bg-obsidian-900 border border-slate-700 text-slate-200 text-xs"
+                className="w-full px-2 py-1 rounded bg-neutral-900 border border-white/15 text-white text-xs"
               />
             </div>
             <div>
-              <label className="block text-slate-400 text-[10px] uppercase mb-0.5">Longitude</label>
+              <label className="block text-neutral-400 text-[10px] uppercase mb-0.5">Longitude</label>
               <input
                 type="number"
                 step="any"
                 required
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                className="w-full px-2 py-1 rounded bg-obsidian-900 border border-slate-700 text-slate-200 text-xs"
+                className="w-full px-2 py-1 rounded bg-neutral-900 border border-white/15 text-white text-xs"
               />
             </div>
           </div>
 
-          {/* Photo Attachment / Hazard Preset Picker */}
+          {/* Photo Attachment */}
           <div>
-            <label className="block text-slate-300 uppercase tracking-wider mb-1">
-              Field Hazard Photo (Optional for Gemini Multimodal Analysis)
+            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+              Hazard Photo (Optional for Gemini Multimodal Analysis)
             </label>
             <div className="flex flex-col sm:flex-row gap-3 items-start">
-              {/* File upload input */}
-              <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs transition">
+              <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-white/15 text-white text-xs transition">
                 <Upload className="w-3.5 h-3.5" />
                 <span>Upload From Device</span>
                 <input type="file" accept="image/*" onChange={handleImageFile} className="hidden" />
               </label>
 
-              {/* Quick photo presets */}
               <div className="flex flex-wrap gap-1.5">
                 {hazardPhotoPresets.map((hp) => (
                   <button
@@ -363,8 +373,8 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
                     }}
                     className={`px-2 py-1.5 rounded border text-[10px] transition ${
                       imagePreview === hp.url
-                        ? "bg-slate-800 border-tactical-cyan text-tactical-cyan"
-                        : "bg-obsidian-950 border-slate-800 text-slate-400 hover:text-slate-200"
+                        ? "bg-white text-black border-white font-bold"
+                        : "bg-black border-white/10 text-neutral-400 hover:text-white"
                     }`}
                   >
                     📷 {hp.label}
@@ -373,9 +383,8 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
               </div>
             </div>
 
-            {/* Photo preview thumbnail */}
             {imagePreview && (
-              <div className="mt-2 relative w-32 h-20 rounded-lg overflow-hidden border border-slate-700">
+              <div className="mt-2.5 relative w-32 h-20 rounded-lg overflow-hidden border border-white/20 shadow-md">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagePreview} alt="Field preview" className="w-full h-full object-cover" />
                 <button
@@ -384,7 +393,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
                     setImagePreview(null);
                     setImageBase64(null);
                   }}
-                  className="absolute top-1 right-1 bg-obsidian-950/80 p-0.5 rounded text-slate-300 text-[10px]"
+                  className="absolute top-1 right-1 bg-black/80 px-1 rounded text-white text-[10px]"
                 >
                   ✕
                 </button>
@@ -392,12 +401,12 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
             )}
           </div>
 
-          {/* Submit Action */}
+          {/* Submit Button */}
           <div className="pt-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-lg bg-gradient-to-r from-tactical-cyan to-cyan-500 text-obsidian-950 hover:from-cyan-400 hover:to-cyan-300 font-bold text-sm tracking-wide transition flex items-center justify-center gap-2 shadow-cyan-glow"
+              className="w-full py-3.5 rounded-xl bg-white text-black font-extrabold text-sm tracking-wider hover:bg-neutral-200 transition flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(255,255,255,0.3)]"
             >
               <Sparkles className={`w-4 h-4 ${isSubmitting ? "animate-spin" : ""}`} />
               <span>{isSubmitting ? "Triaging with Gemini 2.5 Flash..." : "Submit to Triage Engine"}</span>
@@ -406,125 +415,110 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
         </form>
       </div>
 
-      {/* Live AI Triage Receipt Drawer / Modal */}
+      {/* Live AI Triage Receipt */}
       {submissionReceipt && (
-        <div className="rounded-xl border border-tactical-cyan/60 bg-slate-900/95 p-6 shadow-2xl flex flex-col gap-4 animate-fadeIn">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="rounded-2xl border border-white/30 bg-neutral-950 p-6 sm:p-7 shadow-3d-card flex flex-col gap-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-tactical-emerald" />
+              <CheckCircle2 className="w-5 h-5 text-white" />
               <h2 className="font-mono text-base font-bold text-white tracking-wide">
                 AI TRIAGE RECEIPT GENERATED
               </h2>
             </div>
-            <span className="font-mono text-xs text-tactical-cyan px-2.5 py-1 rounded bg-slate-800 border border-slate-700">
+            <span className="font-mono text-xs text-white px-2.5 py-1 rounded bg-neutral-900 border border-white/20">
               TICKET #{submissionReceipt.reportId}
             </span>
           </div>
 
-          <p className="text-xs text-slate-300 font-sans">
-            Your complaint was instantly ingested by the ASTRA-Grid Tactical engine. Here is how our AI categorized and prioritized your report:
+          <p className="text-xs text-neutral-300 font-sans">
+            Your complaint was instantly ingested by CampusFix. Here is how our AI categorized, duplicate-checked, and prioritized your report:
           </p>
 
-          {/* Receipt Highlights */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-            <div className="bg-obsidian-950 p-3 rounded border border-slate-800">
-              <span className="text-slate-400 block text-[10px] uppercase">AI Category</span>
-              <span className="text-tactical-cyan font-bold">{submissionReceipt.category}</span>
+            <div className="bg-neutral-900 p-3 rounded-lg border border-white/10">
+              <span className="text-neutral-400 block text-[10px] uppercase font-bold">Category</span>
+              <span className="text-white font-bold">{submissionReceipt.category}</span>
             </div>
 
-            <div className="bg-obsidian-950 p-3 rounded border border-slate-800">
-              <span className="text-slate-400 block text-[10px] uppercase">Priority Score</span>
-              <span
-                className={`font-bold ${
-                  submissionReceipt.priority_score >= 80
-                    ? "text-tactical-crimson"
-                    : submissionReceipt.priority_score >= 65
-                    ? "text-tactical-amber"
-                    : "text-tactical-cyan"
-                }`}
-              >
+            <div className="bg-neutral-900 p-3 rounded-lg border border-white/10">
+              <span className="text-neutral-400 block text-[10px] uppercase font-bold">Priority Score</span>
+              <span className="text-white font-extrabold">
                 {submissionReceipt.priority_score}/100 [{submissionReceipt.priority_level}]
               </span>
             </div>
           </div>
 
-          {/* AI Summary */}
-          <div className="bg-obsidian-950 p-3 rounded border border-slate-800 text-xs">
-            <span className="text-tactical-cyan font-mono text-[10px] block uppercase font-bold mb-1">
+          <div className="bg-neutral-900 p-3 rounded-lg border border-white/10 text-xs">
+            <span className="text-white font-mono text-[10px] block uppercase font-bold mb-1">
               Executive AI Summary
             </span>
-            <p className="text-slate-200 font-sans">{submissionReceipt.ai_summary}</p>
+            <p className="text-neutral-200 font-sans">{submissionReceipt.ai_summary}</p>
           </div>
 
-          {/* Duplicate Match Status */}
           {submissionReceipt.is_likely_duplicate && (
-            <div className="p-3 rounded bg-amber-950/20 border border-tactical-amber/40 text-xs font-mono text-tactical-amber flex items-start gap-2">
-              <GitMerge className="w-4 h-4 mt-0.5 shrink-0" />
+            <div className="p-3 rounded-lg bg-neutral-900 border border-white/25 text-xs font-mono text-white flex items-start gap-2">
+              <GitMerge className="w-4 h-4 mt-0.5 shrink-0 text-white" />
               <div>
-                <strong>Corroborating Citizen Duplicate Detected:</strong>
-                <p className="text-slate-300 text-[11px] mt-0.5 font-sans">
-                  {submissionReceipt.duplicate_reasoning} (Matched Ticket #{submissionReceipt.matched_duplicate_id}).
-                  Both complaints are linked to prevent split crew dispatch and boost priority.
+                <strong>Corroborating Student Report Detected:</strong>
+                <p className="text-neutral-400 text-[11px] mt-0.5 font-sans">
+                  {submissionReceipt.duplicate_reasoning} (Matched Ticket #{submissionReceipt.matched_duplicate_id}). Both tickets linked to prevent duplicate crew dispatches.
                 </p>
               </div>
             </div>
           )}
 
-          {/* AI Explanation of Ranking */}
-          <div className="bg-obsidian-950 p-3 rounded border border-slate-800 text-xs">
-            <span className="text-tactical-cyan font-mono text-[10px] block uppercase font-bold mb-1">
+          <div className="bg-neutral-900 p-3 rounded-lg border border-white/10 text-xs">
+            <span className="text-white font-mono text-[10px] block uppercase font-bold mb-1">
               Transparent Scoring Explanation
             </span>
-            <p className="text-slate-300 font-sans italic text-[11px]">
+            <p className="text-neutral-300 font-sans italic text-[11px]">
               {submissionReceipt.ai_explanation}
             </p>
           </div>
 
-          {/* 4-Factor Breakdown */}
           {submissionReceipt.priority_factors && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono bg-obsidian-950 p-3 rounded border border-slate-800">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono bg-neutral-900 p-3 rounded-lg border border-white/10">
               <div>
-                <span className="text-slate-400 block">Life Safety:</span>
-                <span className="text-tactical-crimson font-bold">
+                <span className="text-neutral-400 block">Life Safety:</span>
+                <span className="text-white font-bold">
                   {submissionReceipt.priority_factors.safetyRiskScore}/40
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block">Cascade Impact:</span>
-                <span className="text-tactical-amber font-bold">
+                <span className="text-neutral-400 block">Academic Cascade:</span>
+                <span className="text-white font-bold">
                   {submissionReceipt.priority_factors.cascadeImpactScore}/25
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block">Report Volume:</span>
-                <span className="text-tactical-cyan font-bold">
+                <span className="text-neutral-400 block">Student Volume:</span>
+                <span className="text-white font-bold">
                   {submissionReceipt.priority_factors.duplicateVolumeScore}/20
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block">Zone Sensitivity:</span>
-                <span className="text-tactical-emerald font-bold">
+                <span className="text-neutral-400 block">Zone Sensitivity:</span>
+                <span className="text-white font-bold">
                   {submissionReceipt.priority_factors.vulnerabilityScore}/15
                 </span>
               </div>
             </div>
           )}
 
-          {/* Action Links */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-slate-800 text-xs font-mono">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-white/10 text-xs font-mono">
             <Link
               href={`/track?id=${submissionReceipt.reportId}`}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-tactical-cyan text-obsidian-950 font-bold hover:bg-cyan-300 transition"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-white text-black font-bold hover:bg-neutral-200 transition shadow-sm"
             >
-              <span>Follow Progress in Live Tracker</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Follow Progress in Student Tracker</span>
+              <ArrowRight className="w-3.5 h-3.5 text-black" />
             </Link>
 
             <Link
               href="/"
-              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white border border-white/10 transition"
             >
-              View in Tactical Command Deck
+              View in Campus Deck
             </Link>
           </div>
         </div>

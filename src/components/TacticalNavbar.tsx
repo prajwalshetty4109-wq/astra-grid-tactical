@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
-  ShieldAlert,
+  Wrench,
   Radio,
   MapPin,
   FileText,
@@ -12,8 +12,9 @@ import {
   ChevronDown,
   ChevronUp,
   RefreshCw,
-  ExternalLink,
   Cpu,
+  Building2,
+  AlertCircle,
 } from "lucide-react";
 
 interface TacticalNavbarProps {
@@ -37,7 +38,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
   const [resetting, setResetting] = useState(false);
 
   const handleReset = async () => {
-    if (confirm("Reset operational state to 36 pre-seeded synthetic reports?")) {
+    if (confirm("Reset campus facility state to 36 baseline synthetic reports?")) {
       setResetting(true);
       try {
         await fetch("/api/reports/reset", { method: "POST" });
@@ -55,55 +56,55 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
   };
 
   const navItems = [
-    { label: "Tactical Deck", href: "/", icon: Layers },
-    { label: "Citizen Intake", href: "/report", icon: Radio },
-    { label: "Citizen Tracker", href: "/track", icon: MapPin },
+    { label: "Campus Deck", href: "/", icon: Layers },
+    { label: "Facility Intake", href: "/report", icon: Radio },
+    { label: "Student Tracker", href: "/track", icon: MapPin },
     { label: "AI Integrity & Math", href: "/integrity", icon: FileText },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800/90 bg-obsidian-900/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/90 backdrop-blur-md">
       {/* 5-Min Judge Demo Walkthrough Bar */}
-      <div className="bg-slate-950 border-b border-cyan-950/60 text-xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-1.5 flex items-center justify-between gap-2">
+      <div className="bg-neutral-950 border-b border-white/10 text-xs">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-tactical-cyan/15 border border-tactical-cyan/40 text-tactical-cyan font-mono font-semibold tracking-wider text-[11px] uppercase">
-              <Sparkles className="w-3 h-3 animate-spin text-tactical-cyan" />
-              Judge Quick-Demo Tour
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white text-black font-mono font-bold tracking-wider text-[11px] uppercase shadow-[0_2px_8px_rgba(255,255,255,0.25)]">
+              <Sparkles className="w-3 h-3 text-black animate-spin" />
+              5-Min Judge Demo Flow
             </span>
-            <span className="hidden md:inline text-slate-400 text-xs font-sans">
-              4-Step Evaluator Flow (Capture → Understand → Reveal → Act)
+            <span className="hidden md:inline text-neutral-400 text-xs font-sans">
+              4 Lifecycle Stages: Capture → Understand → Reveal → Act
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setDemoBannerOpen(!demoBannerOpen)}
-              className="text-slate-400 hover:text-tactical-cyan flex items-center gap-1 px-2 py-0.5 rounded hover:bg-slate-800/60 transition"
+              className="text-neutral-400 hover:text-white flex items-center gap-1 px-2 py-0.5 rounded border border-white/10 hover:border-white/30 transition text-[11px] font-mono"
               aria-expanded={demoBannerOpen}
               aria-label="Toggle Judge Demo Banner"
             >
-              <span className="text-[11px] font-mono">{demoBannerOpen ? "Hide Steps" : "Show Steps"}</span>
+              <span>{demoBannerOpen ? "Hide Steps" : "Show Steps"}</span>
               {demoBannerOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
           </div>
         </div>
 
         {demoBannerOpen && (
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-2.5 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-2 border-t border-slate-800/40">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-3 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-2 border-t border-white/5">
             <button
               onClick={() => {
                 if (onTriggerDemoStep) onTriggerDemoStep(1);
                 else router.push("/report?demo=true");
               }}
-              className="text-left p-2 rounded bg-obsidian-800/90 hover:bg-slate-800/90 border border-slate-800 hover:border-tactical-cyan/60 transition group"
+              className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
-              <div className="flex items-center justify-between text-[11px] font-mono text-tactical-cyan mb-1">
+              <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
                 <span className="font-bold">STEP 1: CAPTURE</span>
-                <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-300">15s</span>
+                <span className="text-[10px] bg-white/10 px-1 rounded text-neutral-300">15s</span>
               </div>
-              <p className="text-[11px] text-slate-300 line-clamp-1 group-hover:text-white">
-                Simulate Urgent Flood + Live Wire Intake
+              <p className="text-[11px] text-neutral-400 line-clamp-1 group-hover:text-white">
+                Auto-Fill Science Lab Water Leak & Arcing Outlet
               </p>
             </button>
 
@@ -112,13 +113,13 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
                 if (onTriggerDemoStep) onTriggerDemoStep(2);
                 else router.push("/?filter=CRITICAL");
               }}
-              className="text-left p-2 rounded bg-obsidian-800/90 hover:bg-slate-800/90 border border-slate-800 hover:border-tactical-amber/60 transition group"
+              className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
-              <div className="flex items-center justify-between text-[11px] font-mono text-tactical-amber mb-1">
+              <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
                 <span className="font-bold">STEP 2: UNDERSTAND</span>
-                <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-300">AI Triage</span>
+                <span className="text-[10px] bg-white/10 px-1 rounded text-neutral-300">AI Triage</span>
               </div>
-              <p className="text-[11px] text-slate-300 line-clamp-1 group-hover:text-white">
+              <p className="text-[11px] text-neutral-400 line-clamp-1 group-hover:text-white">
                 Inspect 98/100 Risk Score & Duplicate Link
               </p>
             </button>
@@ -128,62 +129,62 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
                 if (onTriggerDemoStep) onTriggerDemoStep(3);
                 else router.push("/?cluster=HOTSPOT-1");
               }}
-              className="text-left p-2 rounded bg-obsidian-800/90 hover:bg-slate-800/90 border border-slate-800 hover:border-tactical-crimson/60 transition group"
+              className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
-              <div className="flex items-center justify-between text-[11px] font-mono text-tactical-crimson mb-1">
+              <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
                 <span className="font-bold">STEP 3: REVEAL</span>
-                <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-300">Gemini</span>
+                <span className="text-[10px] bg-white/10 px-1 rounded text-neutral-300">Gemini</span>
               </div>
-              <p className="text-[11px] text-slate-300 line-clamp-1 group-hover:text-white">
-                Trigger 60s MG Road Hotspot Brief
+              <p className="text-[11px] text-neutral-400 line-clamp-1 group-hover:text-white">
+                Trigger 60s Science Block Maintenance Brief
               </p>
             </button>
 
             <button
               onClick={() => {
                 if (onTriggerDemoStep) onTriggerDemoStep(4);
-                else router.push("/track?id=AST-109");
+                else router.push("/track?id=CF-104");
               }}
-              className="text-left p-2 rounded bg-obsidian-800/90 hover:bg-slate-800/90 border border-slate-800 hover:border-tactical-emerald/60 transition group"
+              className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
-              <div className="flex items-center justify-between text-[11px] font-mono text-tactical-emerald mb-1">
+              <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
                 <span className="font-bold">STEP 4: ACT</span>
-                <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-300">Live SLA</span>
+                <span className="text-[10px] bg-white/10 px-1 rounded text-neutral-300">Crew SLA</span>
               </div>
-              <p className="text-[11px] text-slate-300 line-clamp-1 group-hover:text-white">
-                Dispatch Units & Track Citizen Receipt
+              <p className="text-[11px] text-neutral-400 line-clamp-1 group-hover:text-white">
+                Dispatch Units & Track Student Timeline
               </p>
             </button>
           </div>
         )}
       </div>
 
-      {/* Primary Tactical Navbar */}
+      {/* Primary Monochrome 3D Navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand Identity */}
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded bg-obsidian-800 border border-tactical-cyan/40 flex items-center justify-center shadow-cyan-glow group-hover:border-tactical-cyan transition">
-              <ShieldAlert className="w-5 h-5 text-tactical-cyan group-hover:scale-105 transition-transform" />
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-lg bg-white text-black flex items-center justify-center font-bold shadow-[0_4px_14px_rgba(255,255,255,0.3)] group-hover:scale-105 transition-transform">
+              <Building2 className="w-5 h-5 text-black" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-base font-bold tracking-wider text-white">
-                  ASTRA<span className="text-tactical-cyan">-GRID</span>
+                <span className="font-mono text-base font-extrabold tracking-wider text-white">
+                  CAMPUS<span className="text-neutral-400">FIX</span>
                 </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                  TACTICAL v2.5
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-900 text-neutral-300 border border-white/15">
+                  FACILITIES v2.0
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-sans tracking-tight hidden sm:block">
-                Explainable Civic Crisis & Hotspot Command Center
+              <p className="text-[10px] text-neutral-400 font-sans tracking-tight hidden sm:block">
+                AI Smart-Facility Infrastructure Operations Command
               </p>
             </div>
           </Link>
         </div>
 
-        {/* Tactical Nav Links */}
-        <nav className="hidden md:flex items-center gap-1 bg-obsidian-950/70 p-1 rounded-lg border border-slate-800/80">
+        {/* Navigation Links */}
+        <nav className="hidden md:flex items-center gap-1 bg-neutral-950 p-1 rounded-lg border border-white/10">
           {navItems.map((item) => {
             const isActive = router.pathname === item.href;
             const Icon = item.icon;
@@ -193,12 +194,12 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
                 href={item.href}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
                   isActive
-                    ? "bg-slate-800 text-tactical-cyan border border-tactical-cyan/30 shadow-sm"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                    ? "bg-white text-black font-semibold shadow-[0_2px_8px_rgba(255,255,255,0.2)]"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-900"
                 }`}
                 aria-current={isActive ? "page" : undefined}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-tactical-cyan" : "text-slate-400"}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-black" : "text-neutral-400"}`} />
                 {item.label}
               </Link>
             );
@@ -208,23 +209,23 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
         {/* Operational Status & Reset */}
         <div className="flex items-center gap-3">
           {/* AI Engine Status Badge */}
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-xs font-mono">
-            <Cpu className="w-3.5 h-3.5 text-tactical-cyan animate-pulse" />
-            <span className="text-slate-400">AI:</span>
-            <span className="text-tactical-cyan font-medium">Gemini 2.5 Flash</span>
+          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded bg-neutral-950 border border-white/10 text-xs font-mono">
+            <Cpu className="w-3.5 h-3.5 text-white animate-pulse" />
+            <span className="text-neutral-400">AI:</span>
+            <span className="text-white font-medium">Gemini 2.5 Flash</span>
           </div>
 
           {/* Quick Metrics */}
-          <div className="hidden sm:flex items-center gap-2.5 font-mono text-xs text-slate-400 bg-obsidian-950 px-2.5 py-1 rounded border border-slate-800/80">
+          <div className="hidden sm:flex items-center gap-2.5 font-mono text-xs text-neutral-400 bg-neutral-950 px-2.5 py-1 rounded border border-white/10">
             <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-tactical-crimson animate-ping" />
-              <span className="text-tactical-crimson font-bold">{kpis.criticalCount}</span>
+              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              <span className="text-white font-bold">{kpis.criticalCount}</span>
               <span className="text-[10px]">CRITICAL</span>
             </div>
-            <span className="text-slate-700">|</span>
+            <span className="text-neutral-700">|</span>
             <div className="flex items-center gap-1">
-              <span className="text-tactical-amber font-bold">{kpis.activeHotspots}</span>
-              <span className="text-[10px]">HOTSPOTS</span>
+              <span className="text-white font-bold">{kpis.activeHotspots}</span>
+              <span className="text-[10px]">CLUSTERS</span>
             </div>
           </div>
 
@@ -232,11 +233,11 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
           <button
             onClick={handleReset}
             disabled={resetting}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-obsidian-800 hover:bg-slate-800 border border-slate-700 hover:border-slate-500 text-xs font-mono text-slate-300 transition"
-            title="Reset to 36 baseline synthetic reports"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-white/15 text-xs font-mono text-neutral-300 transition"
+            title="Reset to 36 baseline synthetic campus reports"
             aria-label="Reset operational state to 36 reports"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-tactical-cyan" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-white" : ""}`} />
             <span className="hidden sm:inline">Reset Baseline</span>
           </button>
         </div>

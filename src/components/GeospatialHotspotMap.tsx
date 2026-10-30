@@ -1,15 +1,12 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { CivicReport, HotspotCluster } from "@/lib/validators";
 import {
-  Maximize2,
-  Minimize2,
   Crosshair,
   Layers,
   AlertTriangle,
   Zap,
-  Filter,
-  Eye,
-  Info,
+  Building2,
+  Maximize2,
   Compass,
 } from "lucide-react";
 
@@ -32,11 +29,9 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
 }) => {
   const [activeLayer, setActiveLayer] = useState<"ALL" | "CRITICAL" | "DUPLICATES" | "CLUSTERS">("ALL");
   const [hoveredReport, setHoveredReport] = useState<CivicReport | null>(null);
-  const [radarSweeping, setRadarSweeping] = useState(true);
-  const [zoomLevel, setZoomLevel] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Compute bounding box for projection
+  // Compute projection bounds
   const bounds = useMemo(() => {
     if (reports.length === 0) {
       return { minLat: 12.92, maxLat: 13.04, minLon: 77.58, maxLon: 77.76 };
@@ -51,23 +46,21 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
     };
   }, [reports]);
 
-  // Project geographic coordinates to SVG 1000x600 viewBox
+  // Project lat/lon to 1000x600 SVG coordinates
   const project = (lat: number, lon: number) => {
     const width = 1000;
     const height = 600;
-    const padding = 50;
+    const padding = 60;
 
     const lonSpan = bounds.maxLon - bounds.minLon || 1;
     const latSpan = bounds.maxLat - bounds.minLat || 1;
 
-    // Invert lat for SVG y-axis
     const x = padding + ((lon - bounds.minLon) / lonSpan) * (width - 2 * padding);
     const y = height - padding - ((lat - bounds.minLat) / latSpan) * (height - 2 * padding);
 
     return { x, y };
   };
 
-  // Filter reports based on active layer
   const filteredReports = useMemo(() => {
     if (activeLayer === "CRITICAL") {
       return reports.filter((r) => r.priority_level === "CRITICAL");
@@ -78,58 +71,44 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
     return reports;
   }, [reports, activeLayer]);
 
-  // Sector labels with center coordinates
-  const sectors = [
-    { name: "Sector 1: MG Road Metro", lat: 12.9756, lon: 77.6068, code: "SEC-01" },
-    { name: "Sector 2: Jayanagar Hospital", lat: 12.9251, lon: 77.5938, code: "SEC-02" },
-    { name: "Sector 3: Hebbal Arterial Flyover", lat: 13.0358, lon: 77.5970, code: "SEC-03" },
-    { name: "Sector 4: Indiranagar 100ft", lat: 12.9784, lon: 77.6408, code: "SEC-04" },
-    { name: "Sector 5: Koramangala Drain Belt", lat: 12.9352, lon: 77.6245, code: "SEC-05" },
-    { name: "Sector 6: Whitefield Transit Hub", lat: 12.9841, lon: 77.7521, code: "SEC-06" },
+  // Campus Building Blocks with coordinates and 3D architectural profiles
+  const campusBuildings = [
+    { name: "Science Block Wing B", lat: 12.9756, lon: 77.6068, code: "SCI-01", floors: "4F Lab Wing" },
+    { name: "Central Library Commons", lat: 12.9251, lon: 77.5938, code: "LIB-02", floors: "3F Study Wing" },
+    { name: "Student Dorms Block C", lat: 13.0358, lon: 77.5970, code: "RES-03", floors: "5F Residential" },
+    { name: "Engineering Wing", lat: 12.9784, lon: 77.6408, code: "ENG-04", floors: "3F Classrooms" },
+    { name: "Main Cafeteria", lat: 12.9352, lon: 77.6245, code: "CAF-05", floors: "2F Dining Hall" },
+    { name: "Admin Hub", lat: 12.9841, lon: 77.7521, code: "ADM-06", floors: "2F Services" },
   ];
-
-  const getPinColor = (priority: string) => {
-    switch (priority) {
-      case "CRITICAL":
-        return "#EF4444"; // Emergency Crimson
-      case "HIGH":
-        return "#F59E0B"; // Hazard Amber
-      case "MEDIUM":
-        return "#00F0FF"; // Tactical Cyan
-      case "LOW":
-      default:
-        return "#10B981"; // Civic Emerald
-    }
-  };
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full rounded-xl border border-slate-800/90 bg-obsidian-950/90 overflow-hidden shadow-2xl flex flex-col"
+      className="relative w-full rounded-xl border border-white/15 bg-neutral-950 p-0 shadow-3d-card overflow-hidden flex flex-col"
       style={{ height: "620px" }}
     >
-      {/* Tactical Map Header & Controls */}
-      <div className="flex items-center justify-between px-4 py-3 bg-obsidian-900/90 border-b border-slate-800/80 z-10 backdrop-blur-sm">
+      {/* 3D Blueprint Header & Layer Controls */}
+      <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/90 border-b border-white/10 z-10 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Crosshair className="w-4 h-4 text-tactical-cyan animate-spin" style={{ animationDuration: "12s" }} />
-            <h2 className="font-mono text-sm font-semibold tracking-wider text-slate-200">
-              GEOSPATIAL HOTSPOT RADAR <span className="text-tactical-cyan text-xs">[LIVE TELEMETRY]</span>
+            <Building2 className="w-4 h-4 text-white" />
+            <h2 className="font-mono text-sm font-bold tracking-wider text-white">
+              CAMPUS 3D BLUEPRINT <span className="text-neutral-400 text-xs">[ACTIVE TELEMETRY]</span>
             </h2>
           </div>
-          <span className="hidden sm:inline-block font-mono text-[11px] text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
-            GRID: 12.97°N / 77.59°E • BGR
+          <span className="hidden sm:inline-block font-mono text-[11px] text-neutral-400 px-2 py-0.5 rounded bg-black border border-white/10">
+            CAMPUS GRID: 12.97°N / 77.59°E • MAIN QUAD
           </span>
         </div>
 
         {/* Layer Filters */}
-        <div className="flex items-center gap-1.5 bg-obsidian-950 p-1 rounded-lg border border-slate-800/80 text-xs font-mono">
+        <div className="flex items-center gap-1.5 bg-black p-1 rounded-lg border border-white/10 text-xs font-mono">
           <button
             onClick={() => setActiveLayer("ALL")}
             className={`px-2.5 py-1 rounded transition ${
               activeLayer === "ALL"
-                ? "bg-slate-800 text-tactical-cyan border border-tactical-cyan/40"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-white text-black font-semibold shadow-sm"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             All ({reports.length})
@@ -138,8 +117,8 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
             onClick={() => setActiveLayer("CRITICAL")}
             className={`px-2.5 py-1 rounded transition flex items-center gap-1 ${
               activeLayer === "CRITICAL"
-                ? "bg-tactical-crimson/20 text-tactical-crimson border border-tactical-crimson/50"
-                : "text-slate-400 hover:text-tactical-crimson"
+                ? "bg-white text-black font-semibold shadow-sm"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             <AlertTriangle className="w-3 h-3" />
@@ -149,8 +128,8 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
             onClick={() => setActiveLayer("CLUSTERS")}
             className={`px-2.5 py-1 rounded transition flex items-center gap-1 ${
               activeLayer === "CLUSTERS"
-                ? "bg-tactical-amber/20 text-tactical-amber border border-tactical-amber/50"
-                : "text-slate-400 hover:text-tactical-amber"
+                ? "bg-white text-black font-semibold shadow-sm"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             <Zap className="w-3 h-3" />
@@ -160,8 +139,8 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
             onClick={() => setActiveLayer("DUPLICATES")}
             className={`px-2.5 py-1 rounded transition ${
               activeLayer === "DUPLICATES"
-                ? "bg-slate-800 text-tactical-cyan border border-tactical-cyan/40"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-white text-black font-semibold shadow-sm"
+                : "text-neutral-400 hover:text-white"
             }`}
           >
             Duplicates
@@ -169,43 +148,74 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
         </div>
       </div>
 
-      {/* SVG Canvas Tactical Coordinate Radar */}
-      <div className="relative flex-1 bg-obsidian-950 bg-tactical-grid select-none overflow-hidden">
+      {/* Interactive 3D Perspective Canvas */}
+      <div className="relative flex-1 bg-black bg-campus-grid select-none overflow-hidden">
         <svg
           viewBox="0 0 1000 600"
           className="w-full h-full cursor-crosshair"
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* Tactical Circular Radar Rings */}
-          <g className="opacity-25 pointer-events-none" stroke="#00F0FF" strokeWidth="0.75" fill="none">
-            <circle cx="500" cy="300" r="100" strokeDasharray="3,3" />
-            <circle cx="500" cy="300" r="200" strokeDasharray="4,4" />
-            <circle cx="500" cy="300" r="280" />
-            <line x1="500" y1="20" x2="500" y2="580" strokeDasharray="2,4" />
-            <line x1="50" y1="300" x2="950" y2="300" strokeDasharray="2,4" />
+          {/* Subtle 3D Isometric Coordinate Grid lines */}
+          <g className="opacity-15 pointer-events-none" stroke="#FFFFFF" strokeWidth="0.75" fill="none">
+            <line x1="500" y1="20" x2="500" y2="580" strokeDasharray="4,4" />
+            <line x1="50" y1="300" x2="950" y2="300" strokeDasharray="4,4" />
+            <circle cx="500" cy="300" r="120" strokeDasharray="2,4" />
+            <circle cx="500" cy="300" r="240" strokeDasharray="3,6" />
           </g>
 
-          {/* Sector Marker Boundaries */}
-          {sectors.map((sec) => {
-            const pos = project(sec.lat, sec.lon);
+          {/* Isometric 3D Campus Building Footprints */}
+          {campusBuildings.map((bldg) => {
+            const pos = project(bldg.lat, bldg.lon);
             return (
-              <g key={sec.code} className="pointer-events-none">
-                <circle cx={pos.x} cy={pos.y} r="45" fill="rgba(0, 240, 255, 0.02)" stroke="rgba(0, 240, 255, 0.15)" strokeDasharray="2,2" />
+              <g key={bldg.code} className="pointer-events-none">
+                {/* 3D Extruded Building Block Shadow */}
+                <rect
+                  x={pos.x - 38}
+                  y={pos.y - 18}
+                  width="76"
+                  height="44"
+                  rx="6"
+                  fill="rgba(255, 255, 255, 0.04)"
+                  stroke="rgba(255, 255, 255, 0.2)"
+                  strokeWidth="1.2"
+                />
+                {/* 3D Top Elevation Layer */}
+                <rect
+                  x={pos.x - 35}
+                  y={pos.y - 25}
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#121212"
+                  stroke="rgba(255, 255, 255, 0.35)"
+                  strokeWidth="1.2"
+                />
                 <text
                   x={pos.x}
-                  y={pos.y - 48}
-                  fill="#64748B"
+                  y={pos.y - 10}
+                  fill="#FFFFFF"
                   fontSize="9"
+                  fontWeight="bold"
                   fontFamily="JetBrains Mono, monospace"
                   textAnchor="middle"
                 >
-                  [{sec.code}] {sec.name.split(":")[1]?.trim()}
+                  {bldg.code}
+                </text>
+                <text
+                  x={pos.x}
+                  y={pos.y + 4}
+                  fill="#737373"
+                  fontSize="7.5"
+                  fontFamily="Inter, sans-serif"
+                  textAnchor="middle"
+                >
+                  {bldg.name.split(" ")[0]}
                 </text>
               </g>
             );
           })}
 
-          {/* Duplicate Link Vectors (lines connecting duplicate tickets to parent) */}
+          {/* Duplicate Link Vectors */}
           {(activeLayer === "ALL" || activeLayer === "DUPLICATES") && (
             <g className="duplicate-links">
               {reports.map((report) => {
@@ -223,23 +233,23 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                     y1={p1.y}
                     x2={p2.x}
                     y2={p2.y}
-                    stroke="#F59E0B"
+                    stroke="#FFFFFF"
                     strokeWidth="1.2"
                     strokeDasharray="3,3"
-                    opacity="0.6"
+                    opacity="0.5"
                   />
                 );
               })}
             </g>
           )}
 
-          {/* Hotspot Cluster Rings */}
+          {/* Hotspot Building Clusters */}
           {(activeLayer === "ALL" || activeLayer === "CLUSTERS") && (
             <g className="clusters">
               {clusters.map((cluster) => {
                 const pos = project(cluster.centroid.latitude, cluster.centroid.longitude);
                 const isSelected = selectedClusterId === cluster.id;
-                const radius = Math.min(65, Math.max(35, cluster.radiusMeters * 0.25));
+                const radius = Math.min(65, Math.max(38, cluster.radiusMeters * 0.25));
 
                 return (
                   <g
@@ -247,35 +257,34 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                     onClick={() => onSelectCluster(cluster)}
                     className="cursor-pointer group"
                   >
-                    {/* Pulsing hazard ring */}
+                    {/* Multi-layered 3D cluster boundary */}
                     <circle
                       cx={pos.x}
                       cy={pos.y}
                       r={radius}
-                      fill={cluster.criticalCount > 0 ? "rgba(239, 68, 68, 0.12)" : "rgba(245, 158, 11, 0.12)"}
-                      stroke={cluster.criticalCount > 0 ? "#EF4444" : "#F59E0B"}
-                      strokeWidth={isSelected ? "2.5" : "1.5"}
+                      fill={cluster.criticalCount > 0 ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.04)"}
+                      stroke="#FFFFFF"
+                      strokeWidth={isSelected ? "2.5" : "1.2"}
                       strokeDasharray={isSelected ? "none" : "4,3"}
                       className={cluster.criticalCount > 0 ? "animate-pulse" : ""}
                     />
-                    {/* Cluster label */}
+                    {/* Cluster Badge */}
                     <rect
-                      x={pos.x - 45}
+                      x={pos.x - 48}
                       y={pos.y - radius - 20}
-                      width="90"
-                      height="16"
-                      rx="3"
-                      fill="#0F1420"
-                      stroke={cluster.criticalCount > 0 ? "#EF4444" : "#F59E0B"}
+                      width="96"
+                      height="18"
+                      rx="4"
+                      fill="#000000"
+                      stroke="#FFFFFF"
                       strokeWidth="1"
-                      opacity="0.9"
                     />
                     <text
                       x={pos.x}
-                      y={pos.y - radius - 9}
+                      y={pos.y - radius - 8}
                       fill="#FFFFFF"
                       fontSize="9"
-                      fontWeight="600"
+                      fontWeight="bold"
                       fontFamily="JetBrains Mono, monospace"
                       textAnchor="middle"
                     >
@@ -287,13 +296,12 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
             </g>
           )}
 
-          {/* Report Incident Pins */}
+          {/* Incident Pins */}
           <g className="report-pins">
             {filteredReports.map((report) => {
               const pos = project(report.latitude, report.longitude);
               const isSelected = selectedReport?.id === report.id;
               const isCritical = report.priority_level === "CRITICAL";
-              const pinColor = getPinColor(report.priority_level);
 
               return (
                 <g
@@ -304,33 +312,33 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                   onMouseLeave={() => setHoveredReport(null)}
                   className="cursor-pointer transition-transform hover:scale-125"
                 >
-                  {/* Selection / Critical glow */}
-                  {(isSelected || isCritical) && (
+                  {/* Selection 3D Specular Ring */}
+                  {isSelected && (
                     <circle
                       r="12"
                       fill="none"
-                      stroke={pinColor}
-                      strokeWidth="1.5"
-                      opacity={isSelected ? "0.9" : "0.5"}
-                      className={isCritical ? "animate-ping" : ""}
-                      style={{ animationDuration: "3s" }}
+                      stroke="#FFFFFF"
+                      strokeWidth="2"
+                      strokeDasharray="2,2"
+                      className="animate-spin"
+                      style={{ animationDuration: "8s" }}
                     />
                   )}
 
-                  {/* Base pin */}
+                  {/* Core 3D Pin */}
                   <circle
-                    r={isSelected ? "6" : isCritical ? "5" : "4"}
-                    fill={pinColor}
-                    stroke="#07090E"
+                    r={isSelected ? "6.5" : isCritical ? "5.5" : "4"}
+                    fill={isCritical ? "#FFFFFF" : isSelected ? "#FFFFFF" : "#737373"}
+                    stroke="#000000"
                     strokeWidth="1.5"
                   />
 
-                  {/* Monospace score label if critical */}
+                  {/* Score Label if Critical */}
                   {isCritical && (
                     <text
                       x="0"
                       y="-8"
-                      fill={pinColor}
+                      fill="#FFFFFF"
                       fontSize="8"
                       fontWeight="bold"
                       fontFamily="JetBrains Mono, monospace"
@@ -345,23 +353,23 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
           </g>
         </svg>
 
-        {/* Hover / Selection Interactive Popover */}
+        {/* 3D Popover for Hover/Selection */}
         {(hoveredReport || selectedReport) && (
-          <div className="absolute bottom-4 left-4 max-w-sm rounded-lg bg-obsidian-850/95 border border-slate-700/90 p-3 shadow-2xl backdrop-blur-md z-20 reticle-corner">
+          <div className="absolute bottom-4 left-4 max-w-sm rounded-xl bg-neutral-950/95 border border-white/20 p-3.5 shadow-3d-card backdrop-blur-md z-20 reticle-corner-white">
             {(() => {
               const r = hoveredReport || selectedReport!;
               const isCrit = r.priority_level === "CRITICAL";
               return (
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-mono text-xs font-bold text-tactical-cyan">
+                    <span className="font-mono text-xs font-bold text-white">
                       #{r.id} • {r.category}
                     </span>
                     <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                         isCrit
-                          ? "bg-tactical-crimson/20 text-tactical-crimson border border-tactical-crimson/40"
-                          : "bg-slate-800 text-slate-300"
+                          ? "bg-white text-black"
+                          : "bg-neutral-800 text-neutral-300 border border-white/10"
                       }`}
                     >
                       SCORE: {r.priority_score}/100
@@ -370,11 +378,11 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                   <h3 className="text-xs font-semibold text-white line-clamp-1 mb-1">
                     {r.title}
                   </h3>
-                  <p className="text-[11px] text-slate-300 line-clamp-2 mb-2">
+                  <p className="text-[11px] text-neutral-400 line-clamp-2 mb-2">
                     {r.description}
                   </p>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 border-t border-slate-800 pt-1.5">
-                    <span>{r.address.split(",")[0]}</span>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400 border-t border-white/10 pt-1.5">
+                    <span>{r.sub_area} • {r.address}</span>
                     <span>DUPES: {r.duplicate_count || 1}</span>
                   </div>
                 </div>
@@ -383,25 +391,25 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
           </div>
         )}
 
-        {/* Map Legend (Bottom Right) */}
-        <div className="absolute bottom-4 right-4 bg-obsidian-900/90 border border-slate-800/90 p-2.5 rounded-lg text-[10px] font-mono text-slate-300 flex flex-col gap-1.5 shadow-xl backdrop-blur-sm">
-          <div className="text-slate-400 font-semibold uppercase tracking-wider text-[9px] mb-0.5">
+        {/* Map Legend */}
+        <div className="absolute bottom-4 right-4 bg-black/90 border border-white/15 p-3 rounded-xl text-[10px] font-mono text-neutral-300 flex flex-col gap-1.5 shadow-3d-card backdrop-blur-md">
+          <div className="text-neutral-400 font-bold uppercase tracking-wider text-[9px] mb-0.5">
             PRIORITY MATRIX
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-tactical-crimson" />
-            <span>CRITICAL (Score &ge; 80)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-white border border-neutral-400" />
+            <span>CRITICAL (&ge; 80 pts)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-tactical-amber" />
-            <span>HIGH (Score 65–79)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-neutral-400" />
+            <span>HIGH (65–79 pts)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-tactical-cyan" />
-            <span>MEDIUM (Score 40–64)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
+            <span>MEDIUM (40–64 pts)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-tactical-emerald" />
+            <span className="w-2.5 h-2.5 rounded-full bg-neutral-800" />
             <span>LOW / RESOLVED (&lt; 40)</span>
           </div>
         </div>

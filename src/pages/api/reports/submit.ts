@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!parseResult.success) {
     return res.status(400).json({
       success: false,
-      error: "Invalid citizen report input",
+      error: "Invalid campus report input",
       details: parseResult.error.format(),
     });
   }
@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       existingReports
     );
 
-    // 2. Compute Deterministic Civic Prioritization Baseline
+    // 2. Compute Deterministic Campus Prioritization Baseline
     const nearbyReports = existingReports.filter(
       (r) =>
         calculateHaversineDistanceMeters(
@@ -58,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ) <= 250
     );
 
-    const initialCategory: CivicCategory = input.category || "ROAD_DAMAGE";
+    const initialCategory: CivicCategory = input.category || "PLUMBING";
     const deterministicPriority = computeExplainablePriority(
       {
         category: initialCategory,
@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     let finalCategory = initialCategory;
-    let finalSummary = `${input.title} at ${input.address}`;
+    let finalSummary = `${input.title} in ${input.sub_area} (${input.address})`;
     let finalPriorityScore = deterministicPriority.priority_score;
     let finalPriorityLevel = deterministicPriority.priority_level;
     let finalFactors = deterministicPriority.priority_factors;
@@ -100,24 +100,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           priority_score: r.priority_score,
         }));
 
-        const prompt = `You are the lead AI Civic Triage Engine for ASTRA-Grid Tactical Command Center.
-Analyze this newly captured citizen complaint, categorize it, detect cascades, verify duplicate status against nearby reports, and assign an explainable priority score (0-100).
+        const prompt = `You are the AI Infrastructure Triage Director for CampusFix (University Facility Operations).
+Analyze this newly captured student/staff facility complaint, categorize it, detect building cascades, verify duplicate status against existing reports, and assign an explainable priority score (0-100).
 
-CITIZEN REPORT:
+CAMPUS INCIDENT:
 Title: "${input.title}"
 Description: "${input.description}"
 Reported Category: "${input.category || 'NOT_SPECIFIED'}"
 Location: "${input.address}" (${input.sub_area})
 Coordinates: Lat ${input.latitude}, Lon ${input.longitude}
 
-NEARBY CORROBORATING REPORTS WITHIN 250m:
+NEARBY BUILDING REPORTS WITHIN 250m:
 ${JSON.stringify(nearbyContext, null, 2)}
 
 PRE-COMPUTED SPATIAL DUPLICATE HINT:
 ${JSON.stringify(duplicateResult, null, 2)}
 
 ALLOWED CATEGORIES:
-"WATERLOGGING", "ROAD_DAMAGE", "WASTE_OVERFLOW", "STREETLIGHT_OUTAGE", "ELECTRICAL_HAZARD", "WATER_SUPPLY"
+"IT_INFRA", "PLUMBING", "ELECTRICAL", "HVAC", "SANITATION", "FURNITURE"
 
 Return a strictly valid JSON object following this exact schema:
 {
@@ -126,12 +126,12 @@ Return a strictly valid JSON object following this exact schema:
   "priority_score": integer between 0 and 100,
   "priority_level": "CRITICAL" (if >=80) | "HIGH" (65-79) | "MEDIUM" (40-64) | "LOW" (<40),
   "priority_factors": {
-    "safetyRiskScore": integer between 0 and 40 (threat to life/injury),
-    "cascadeImpactScore": integer between 0 and 25 (triggers secondary infrastructure failure),
-    "duplicateVolumeScore": integer between 0 and 20 (independent confirmation count within 250m),
-    "vulnerabilityScore": integer between 0 and 15 (near hospital, school, metro, arterial)
+    "safetyRiskScore": integer between 0 and 40 (threat to life/injury/lab hazard),
+    "cascadeImpactScore": integer between 0 and 25 (triggers lecture/exam/server room failure),
+    "duplicateVolumeScore": integer between 0 and 20 (independent student confirmations),
+    "vulnerabilityScore": integer between 0 and 15 (lab, library, exam hall, dorms)
   },
-  "ai_explanation": "Clear, professional 1-2 sentence justification explaining why this report ranks at this score compared to routine tickets",
+  "ai_explanation": "Clear justification explaining why this ticket ranks at this score compared to routine tickets",
   "is_likely_duplicate": boolean,
   "matched_duplicate_id": "Ticket ID of matched report or null",
   "duplicate_similarity": decimal between 0.0 and 1.0,
@@ -190,11 +190,11 @@ Return a strictly valid JSON object following this exact schema:
           }
         }
       } catch (geminiError) {
-        console.warn("Gemini 2.5 Flash invocation error, seamlessly using deterministic engine:", geminiError);
+        console.warn("Gemini 2.5 Flash intake error, using deterministic campus engine:", geminiError);
       }
     }
 
-    const reportId = `AST-${Math.floor(1000 + Math.random() * 9000)}`;
+    const reportId = `CF-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newReport: CivicReport = {
       id: reportId,
@@ -218,7 +218,7 @@ Return a strictly valid JSON object following this exact schema:
       duplicate_count: 1,
       duplicate_similarity: duplicateSimilarity,
       cluster_id: null,
-      reporter_phone_masked: `***-***-${Math.floor(1000 + Math.random() * 9000)}`,
+      reporter_phone_masked: `STU-***-${Math.floor(1000 + Math.random() * 9000)}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -244,10 +244,10 @@ Return a strictly valid JSON object following this exact schema:
       },
     });
   } catch (error) {
-    console.error("Failed to submit civic report:", error);
+    console.error("Failed to submit campus facility report:", error);
     return res.status(500).json({
       success: false,
-      error: "Internal server error processing civic intake report",
+      error: "Internal server error processing campus report intake",
     });
   }
 }

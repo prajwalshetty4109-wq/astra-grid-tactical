@@ -26,86 +26,84 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (clusterReports.length === 0) {
       return res.status(404).json({
         success: false,
-        error: "No matching reports found for selected cluster",
+        error: "No matching reports found for selected building cluster",
       });
     }
 
-    const title = clusterTitle || `${clusterReports[0].sub_area} Tactical Cluster`;
+    const title = clusterTitle || `${clusterReports[0].sub_area} Facility Cluster`;
 
     // High-fidelity fallback brief generator based on cluster report makeup
     const generateFallbackBrief = (reports: CivicReport[]): ActionBriefResult => {
       const categories = Array.from(new Set(reports.map((r) => r.category)));
-      const hasElectrical = categories.includes("ELECTRICAL_HAZARD");
-      const hasWaterlogging = categories.includes("WATERLOGGING");
-      const hasRoad = categories.includes("ROAD_DAMAGE");
-      const hasWaste = categories.includes("WASTE_OVERFLOW");
-      const hasWaterSupply = categories.includes("WATER_SUPPLY");
-      const hasLight = categories.includes("STREETLIGHT_OUTAGE");
+      const hasElectrical = categories.includes("ELECTRICAL");
+      const hasPlumbing = categories.includes("PLUMBING");
+      const hasIT = categories.includes("IT_INFRA");
+      const hasHVAC = categories.includes("HVAC");
+      const hasSanitation = categories.includes("SANITATION");
 
-      let leadDept = "MUNICIPAL_RAPID_RESPONSE";
+      let leadDept = "FACILITY_GENERAL";
       const sequence: string[] = [];
 
-      if (hasElectrical && hasWaterlogging) {
-        leadDept = "ELECTRICAL_GRID + STORM_DRAINAGE (Joint Emergency Command)";
+      if (hasElectrical && hasPlumbing) {
+        leadDept = "ELECTRICAL_ENG + PLUMBING_OPS (Joint Emergency Command)";
         sequence.push(
-          "1. IMMEDIATE LIFE SAFETY (0-20 min): Dispatch Electrical Grid unit to isolate power to roadside feeder pillars and cordon off flooded pedestrian walkway."
+          "1. IMMEDIATE LIFE SAFETY (0-15 min): Cut building breaker Sub-Panel 3B to eliminate electrocution risk from sparking outlets and cordon off wet lab corridor."
         );
         sequence.push(
-          "2. ROOT CAUSE CLEARANCE (20-90 min): Deploy Storm Drainage hydro-jetting vacuum truck to clear blocked storm culvert and discharge standing water."
+          "2. CHILLED WATER ISOLATION (15-45 min): Close primary ceiling riser isolation valve to halt water leakage onto lab spectrometers and server closets."
         );
         sequence.push(
-          "3. ROAD RESTORATION (2-6 hrs): Dispatch Roads Division cold-mix asphalt crew to repair collapsed roadway craters once water recedes."
+          "3. REPAIR & DRYING (45-180 min): Deploy wet industrial vacuums, dehumidifiers, and solder copper coupling sleeve on chilled water pipe before restoring power."
         );
-      } else if (hasWaste) {
-        leadDept = "SANITATION_SWM (Emergency Clearance Unit)";
+      } else if (hasIT && hasElectrical) {
+        leadDept = "IT_HELPDESK + ELECTRICAL_ENG (Priority Dispatch)";
         sequence.push(
-          "1. CORRIDOR ACCESS (0-30 min): Dispatch dual compactor trucks to clear overflowing dumpsters blocking the emergency approach."
-        );
-        sequence.push(
-          "2. SANITIZATION (30-60 min): Deploy lime powder disinfectant and high-pressure wash down of contaminated asphalt."
+          "1. POWER RESTORATION (0-20 min): Reset tripped floor circuit breaker in Library Panel D and verify voltage output across study carrels."
         );
         sequence.push(
-          "3. MONITORING (Next 48 hrs): Relocate bin perimeter 25 meters away from hospital entrance ramp."
-        );
-      } else if (hasWaterSupply && hasRoad) {
-        leadDept = "WATER_BOARD + ROADS_DIV (Joint Taskforce)";
-        sequence.push(
-          "1. PRESSURE ISOLATION (0-25 min): Shut isolation valve on main water feeder line to halt subsurface soil erosion under flyover pylon."
+          "2. NETWORK RECOVERY (20-40 min): Power-cycle PoE switch stack and re-provision Cisco Access Point AP-LIB-204 firmware."
         );
         sequence.push(
-          "2. PIPE SLEEVE REPAIR (1-3 hrs): Excavate and weld reinforced collar on ruptured supply main."
+          "3. STUDENT CONFIRMATION (40-60 min): Verify 5GHz SSID broadcast and notify students in quiet study commons."
+        );
+      } else if (hasPlumbing && hasSanitation) {
+        leadDept = "PLUMBING_OPS + SANITATION_CREW (Dorm Emergency Unit)";
+        sequence.push(
+          "1. PRESSURE STABILIZATION (0-30 min): Engage backup booster pump #1 in Dorm Block C basement to restore 4th-floor shower pressure."
         );
         sequence.push(
-          "3. FAST-LANE TARMAC RESURFACING (3-8 hrs): Mill and resurface damaged highway fast lane with quick-curing bitumen."
+          "2. REFUSE CHUTE CLEARANCE (30-90 min): Clear jammed vertical chute obstruction on floor 3 and haul accumulated waste bags to compactor."
+        );
+        sequence.push(
+          "3. DISINFECTION (90-150 min): Apply hospital-grade disinfectant across 3rd-floor lounge and washroom bays."
         );
       } else {
-        leadDept = "INTER-DEPARTMENTAL URBAN RESPONSE";
+        leadDept = "FACILITIES_OPERATIONS_CREW";
         sequence.push(
-          "1. RAPID TRIAGE (0-30 min): Dispatch on-duty zone supervisor to erect warning barricades and redirect traffic flow."
+          "1. SITE INSPECTION (0-30 min): Dispatch on-duty building technician to assess failure scope and verify student safety."
         );
         sequence.push(
-          "2. TARGETED INTERVENTION (30-120 min): Execute primary mechanical repair based on priority ranking."
+          "2. RAPID INTERVENTION (30-90 min): Complete mechanical, electrical, or plumbing corrective maintenance."
         );
         sequence.push(
-          "3. CITIZEN CLOSEOUT (2-4 hrs): Verify site restoration and update citizen tracking status to RESOLVED."
+          "3. CLOSEOUT & LOGGING (90-120 min): Update ticket timeline to RESOLVED and notify reporting students."
         );
       }
 
-      const totalCitizens = reports.length * 480 + 1200;
+      const totalStudents = reports.length * 45 + 180;
 
       return {
         cluster_title: title,
-        root_cause_diagnosis: `Multi-issue cascade detected across ${reports.length} corroborating citizen reports. Primary infrastructure failure in ${categories[0]} has triggered secondary issues in ${categories.slice(1).join(", ") || "adjacent pedestrian corridors"}.`,
+        root_cause_diagnosis: `Multi-issue facility failure detected across ${reports.length} corroborating reports. Primary failure in ${categories[0]} has triggered secondary disruption in ${categories.slice(1).join(", ") || "adjacent campus areas"}.`,
         recommended_sequence: sequence,
         lead_department: leadDept,
-        estimated_citizens_impacted: `~${totalCitizens.toLocaleString()} daily commuters, residents & pedestrians`,
-        confidence_note: `High confidence based on ${reports.length} triangulated field complaints within ${title}. Coordinated multi-department dispatch recommended immediately.`,
+        estimated_citizens_impacted: `~${totalStudents.toLocaleString()} students, lab researchers & faculty`,
+        confidence_note: `High confidence based on ${reports.length} triangulated campus reports within ${title}. Coordinated multi-crew dispatch recommended immediately.`,
       };
     };
 
     let briefResult: ActionBriefResult = generateFallbackBrief(clusterReports);
 
-    // If Gemini is configured, invoke gemini-2.5-flash for real-time generative brief
     if (isGeminiConfigured()) {
       try {
         const ai = getGeminiClient();
@@ -119,10 +117,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           address: r.address,
         }));
 
-        const prompt = `You are the Tactical Urban Operations Director.
-Analyze this high-density hotspot cluster of citizen reports and generate an actionable, 60-second executive action brief for immediate municipal command dispatch.
+        const prompt = `You are the University Director of Smart Campus Facility Operations.
+Analyze this high-density building cluster of facility complaints and generate an actionable, 60-second executive maintenance brief for immediate campus crew dispatch.
 
-CLUSTER CONTEXT:
+BUILDING CLUSTER:
 Cluster Title: "${title}"
 Total Corroborating Reports: ${clusterReports.length}
 Reports in Cluster:
@@ -130,16 +128,16 @@ ${JSON.stringify(simplifiedReports, null, 2)}
 
 Produce a JSON response strictly following this schema:
 {
-  "cluster_title": "String title summarizing the geographic cascade",
-  "root_cause_diagnosis": "1-2 sentences identifying the true root cause and how it cascaded into the other complaints",
+  "cluster_title": "String title summarizing the building facility cascade",
+  "root_cause_diagnosis": "1-2 sentences identifying the true root cause and how it cascaded into secondary building issues",
   "recommended_sequence": [
     "1. IMMEDIATE LIFE SAFETY (0-20 min): ...",
     "2. ROOT CAUSE CLEARANCE (20-90 min): ...",
     "3. SECONDARY RESTORATION (2-6 hrs): ..."
   ],
-  "lead_department": "Name of lead municipal department(s) for joint dispatch",
-  "estimated_citizens_impacted": "Estimate (e.g. ~4,800 daily metro commuters & motorists)",
-  "confidence_note": "Brief sentence on data confidence and field crew instructions"
+  "lead_department": "Name of lead campus maintenance crew(s) for joint dispatch",
+  "estimated_citizens_impacted": "Estimate (e.g. ~350 students, lab researchers & faculty)",
+  "confidence_note": "Brief sentence on data confidence and technician instructions"
 }`;
 
         const response = await ai.models.generateContent({
@@ -171,7 +169,7 @@ Produce a JSON response strictly following this schema:
           }
         }
       } catch (geminiError) {
-        console.warn("Gemini action brief error, used robust deterministic brief:", geminiError);
+        console.warn("Gemini action brief error, using deterministic campus brief:", geminiError);
       }
     }
 

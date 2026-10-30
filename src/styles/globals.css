@@ -4,44 +4,95 @@
 
 @layer base {
   :root {
-    --bg-obsidian: #07090e;
-    --card-slate: #0f1420;
-    --tactical-cyan: #00f0ff;
-    --tactical-amber: #f59e0b;
-    --tactical-crimson: #ef4444;
-    --tactical-emerald: #10b981;
+    --bg-pure: #000000;
+    --card-surface: #0a0a0a;
+    --border-subtle: rgba(255, 255, 255, 0.12);
+    --border-bright: rgba(255, 255, 255, 0.28);
+    --text-primary: #ffffff;
+    --text-muted: #8a8a8a;
   }
 
   body {
-    background-color: #07090e;
-    color: #e2e8f0;
+    background-color: #000000;
+    color: #e5e5e5;
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     overflow-x: hidden;
   }
 }
 
-/* Tactical Background Grid Pattern */
-.bg-tactical-grid {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 240, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 240, 255, 0.035) 1px, transparent 1px);
+/* 3D Perspective and Elevation Utilities */
+.perspective-1000 {
+  perspective: 1000px;
 }
 
-.bg-tactical-subgrid {
-  background-size: 160px 160px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 240, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 240, 255, 0.07) 1px, transparent 1px);
+.preserve-3d {
+  transform-style: preserve-3d;
 }
 
-/* Reticle corner decorations */
-.reticle-corner {
+/* Subtle Technical Grid (Pure Monochrome) */
+.bg-campus-grid {
+  background-size: 28px 28px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+}
+
+.bg-campus-isometric {
+  background-size: 56px 56px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* 3D Elevated Card styling */
+.card-3d {
+  background-color: rgba(10, 10, 10, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-3d:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+/* Solid Monochrome 3D Button */
+.btn-3d-white {
+  background-color: #ffffff;
+  color: #000000;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  transition: all 0.2s ease;
+}
+
+.btn-3d-white:hover {
+  background-color: #e5e5e5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.35), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.btn-3d-dark {
+  background-color: #121212;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  transition: all 0.2s ease;
+}
+
+.btn-3d-dark:hover {
+  background-color: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Subtle Specular Reticle Corners */
+.reticle-corner-white {
   position: relative;
 }
 
-.reticle-corner::before,
-.reticle-corner::after {
+.reticle-corner-white::before,
+.reticle-corner-white::after {
   content: "";
   position: absolute;
   width: 6px;
@@ -49,63 +100,36 @@
   pointer-events: none;
 }
 
-.reticle-corner::before {
+.reticle-corner-white::before {
   top: -1px;
   left: -1px;
-  border-top: 1.5px solid #00f0ff;
-  border-left: 1.5px solid #00f0ff;
+  border-top: 1.5px solid #ffffff;
+  border-left: 1.5px solid #ffffff;
 }
 
-.reticle-corner::after {
+.reticle-corner-white::after {
   bottom: -1px;
   right: -1px;
-  border-bottom: 1.5px solid #00f0ff;
-  border-right: 1.5px solid #00f0ff;
+  border-bottom: 1.5px solid #ffffff;
+  border-right: 1.5px solid #ffffff;
 }
 
-/* Glowing Pulse Keyframes */
-@keyframes tactical-pulse-crimson {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
-  }
-}
-
-@keyframes tactical-pulse-cyan {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(0, 240, 255, 0);
-  }
-}
-
-.pulse-crimson {
-  animation: tactical-pulse-crimson 2s infinite;
-}
-
-.pulse-cyan {
-  animation: tactical-pulse-cyan 2.5s infinite;
-}
-
-/* Custom Tactical Scrollbars */
+/* Crisp Monochrome Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #07090e;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #182030;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 240, 255, 0.15);
+  background: #262626;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00f0ff;
+  background: #ffffff;
 }

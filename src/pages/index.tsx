@@ -6,10 +6,11 @@ import { GeospatialHotspotMap } from "@/components/GeospatialHotspotMap";
 import { ClusterActionBriefPanel } from "@/components/ClusterActionBriefPanel";
 import { ExplainableTriageQueue } from "@/components/ExplainableTriageQueue";
 import { WorkflowDispatchModal } from "@/components/WorkflowDispatchModal";
-import { CivicReport, HotspotCluster, ActionBriefResult } from "@/lib/validators";
+import { CivicReport, HotspotCluster } from "@/lib/validators";
 import { INITIAL_SYNTHETIC_REPORTS } from "@/lib/syntheticReports";
 import { detectGeographicClusters } from "@/lib/civicEngine";
 import {
+  Building2,
   AlertTriangle,
   Zap,
   Activity,
@@ -17,11 +18,10 @@ import {
   CheckCircle,
   GitMerge,
   Cpu,
-  Clock,
-  Radio,
+  Wrench,
 } from "lucide-react";
 
-export default function TacticalDeckPage() {
+export default function CampusDeckPage() {
   const router = useRouter();
   const [reports, setReports] = useState<CivicReport[]>(INITIAL_SYNTHETIC_REPORTS);
   const [clusters, setClusters] = useState<HotspotCluster[]>(() =>
@@ -42,7 +42,6 @@ export default function TacticalDeckPage() {
     avgPriorityScore: 74,
   });
 
-  // Fetch live state from backend
   const fetchState = async () => {
     try {
       const res = await fetch("/api/reports/state");
@@ -53,7 +52,7 @@ export default function TacticalDeckPage() {
         if (data.kpis) setKpis(data.kpis);
       }
     } catch (err) {
-      console.warn("Using in-memory tactical baseline:", err);
+      console.warn("Using in-memory campus baseline:", err);
     }
   };
 
@@ -61,7 +60,6 @@ export default function TacticalDeckPage() {
     fetchState();
   }, []);
 
-  // Handle URL query parameters for demo jumps
   useEffect(() => {
     if (router.query.cluster) {
       const target = clusters.find((c) => c.id === router.query.cluster);
@@ -95,7 +93,7 @@ export default function TacticalDeckPage() {
   };
 
   const handleMergeDuplicate = async (duplicateId: string, primaryId: string) => {
-    if (confirm(`Merge duplicate complaint #${duplicateId} into primary incident #${primaryId}?`)) {
+    if (confirm(`Merge duplicate campus ticket #${duplicateId} into primary incident #${primaryId}?`)) {
       try {
         const res = await fetch("/api/reports/workflow", {
           method: "POST",
@@ -119,13 +117,13 @@ export default function TacticalDeckPage() {
     if (step === 1) {
       router.push("/report?demo=true");
     } else if (step === 2) {
-      const topCrit = reports.find((r) => r.id === "AST-109") || reports[0];
+      const topCrit = reports.find((r) => r.id === "CF-104") || reports[0];
       setSelectedReport(topCrit);
     } else if (step === 3) {
       const hotspot1 = clusters.find((c) => c.id === "HOTSPOT-1") || clusters[0];
       setSelectedCluster(hotspot1);
     } else if (step === 4) {
-      const target = reports.find((r) => r.id === "AST-109") || reports[0];
+      const target = reports.find((r) => r.id === "CF-104") || reports[0];
       handleOpenDispatch(target);
     }
   };
@@ -133,7 +131,7 @@ export default function TacticalDeckPage() {
   return (
     <>
       <Head>
-        <title>Tactical Command Deck | ASTRA-Grid Tactical</title>
+        <title>Campus Operations Deck | CampusFix</title>
       </Head>
 
       <TacticalNavbar
@@ -143,93 +141,93 @@ export default function TacticalDeckPage() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
-        {/* Top Operations KPI Ribbon */}
-        <section aria-label="Operations Overview Metrics">
+        {/* Top Operations 3D KPI Ribbon */}
+        <section aria-label="Campus Operations Metrics">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {/* KPI 1 */}
-            <div className="rounded-xl border border-slate-800 bg-obsidian-900/90 p-3.5 flex flex-col justify-between shadow-lg">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-mono">
-                <span>TOTAL REPORTS</span>
-                <Layers className="w-3.5 h-3.5 text-slate-500" />
+            <div className="rounded-xl border border-white/10 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
+              <div className="flex items-center justify-between text-neutral-400 text-xs font-mono font-medium">
+                <span>TOTAL TICKETS</span>
+                <Layers className="w-3.5 h-3.5 text-neutral-500" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-mono text-2xl font-bold text-white">{kpis.totalReports}</span>
-                <span className="text-[10px] font-mono text-slate-400">across 6 sectors</span>
+                <span className="text-[10px] font-mono text-neutral-500">6 Buildings</span>
               </div>
             </div>
 
             {/* KPI 2 */}
-            <div className="rounded-xl border border-tactical-crimson/50 bg-crimson-950/20 p-3.5 flex flex-col justify-between shadow-crimson-glow">
-              <div className="flex items-center justify-between text-tactical-crimson text-xs font-mono font-bold">
+            <div className="rounded-xl border border-white/30 bg-neutral-900 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
+              <div className="flex items-center justify-between text-white text-xs font-mono font-bold">
                 <span>CRITICAL HAZARDS</span>
-                <span className="w-2 h-2 rounded-full bg-tactical-crimson animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="font-mono text-2xl font-bold text-tactical-crimson">
+                <span className="font-mono text-2xl font-extrabold text-white">
                   {kpis.criticalCount}
                 </span>
-                <span className="text-[10px] font-mono text-slate-300">Life-Safety Risks</span>
+                <span className="text-[10px] font-mono text-neutral-300">Lab/Safety Risks</span>
               </div>
             </div>
 
             {/* KPI 3 */}
-            <div className="rounded-xl border border-tactical-amber/50 bg-amber-950/20 p-3.5 flex flex-col justify-between shadow-amber-glow">
-              <div className="flex items-center justify-between text-tactical-amber text-xs font-mono font-bold">
-                <span>HOTSPOT CLUSTERS</span>
-                <Zap className="w-3.5 h-3.5 text-tactical-amber" />
+            <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
+              <div className="flex items-center justify-between text-neutral-300 text-xs font-mono font-bold">
+                <span>BUILDING CLUSTERS</span>
+                <Zap className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="font-mono text-2xl font-bold text-tactical-amber">
+                <span className="font-mono text-2xl font-bold text-white">
                   {kpis.activeHotspots}
                 </span>
-                <span className="text-[10px] font-mono text-slate-300">Coupled Corridors</span>
+                <span className="text-[10px] font-mono text-neutral-400">Coupled Wings</span>
               </div>
             </div>
 
             {/* KPI 4 */}
-            <div className="rounded-xl border border-slate-800 bg-obsidian-900/90 p-3.5 flex flex-col justify-between shadow-lg">
-              <div className="flex items-center justify-between text-tactical-cyan text-xs font-mono font-bold">
+            <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
+              <div className="flex items-center justify-between text-neutral-300 text-xs font-mono font-bold">
                 <span>DUPLICATES LINKED</span>
-                <GitMerge className="w-3.5 h-3.5 text-tactical-cyan" />
+                <GitMerge className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="font-mono text-2xl font-bold text-tactical-cyan">
+                <span className="font-mono text-2xl font-bold text-white">
                   {kpis.duplicatesDetected}
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">&lt;250m Haversine</span>
+                <span className="text-[10px] font-mono text-neutral-400">&lt;250m Haversine</span>
               </div>
             </div>
 
             {/* KPI 5 */}
-            <div className="rounded-xl border border-slate-800 bg-obsidian-900/90 p-3.5 flex flex-col justify-between shadow-lg">
-              <div className="flex items-center justify-between text-tactical-emerald text-xs font-mono font-bold">
-                <span>DISPATCH / RESOLVED</span>
-                <CheckCircle className="w-3.5 h-3.5 text-tactical-emerald" />
+            <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
+              <div className="flex items-center justify-between text-neutral-300 text-xs font-mono font-bold">
+                <span>CREW DISPATCHED</span>
+                <CheckCircle className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="font-mono text-2xl font-bold text-tactical-emerald">
+                <span className="font-mono text-2xl font-bold text-white">
                   {kpis.resolvedCount + kpis.inProgressCount}
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">Field Units Active</span>
+                <span className="text-[10px] font-mono text-neutral-400">Work Orders Active</span>
               </div>
             </div>
 
             {/* KPI 6 */}
-            <div className="rounded-xl border border-slate-800 bg-obsidian-900/90 p-3.5 flex flex-col justify-between shadow-lg">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-mono">
+            <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
+              <div className="flex items-center justify-between text-neutral-400 text-xs font-mono">
                 <span>AI TRIAGE ENGINE</span>
-                <Cpu className="w-3.5 h-3.5 text-tactical-cyan animate-pulse" />
+                <Cpu className="w-3.5 h-3.5 text-white animate-pulse" />
               </div>
               <div className="mt-2 flex flex-col">
                 <span className="font-mono text-xs font-bold text-white">Gemini 2.5 Flash</span>
-                <span className="text-[10px] font-mono text-tactical-cyan">&lt;650ms Latency SLA</span>
+                <span className="text-[10px] font-mono text-neutral-400">&lt;650ms Latency SLA</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section 1: Geospatial Hotspot Map (Reveal Stage) */}
-        <section aria-label="Geospatial City Radar">
+        {/* Section 1: Geospatial 3D Campus Blueprint Map */}
+        <section aria-label="3D Campus Map Blueprint">
           <GeospatialHotspotMap
             reports={reports}
             clusters={clusters}
@@ -240,8 +238,8 @@ export default function TacticalDeckPage() {
           />
         </section>
 
-        {/* Section 2: Detected Clusters & AI Action Brief Panel */}
-        <section aria-label="Detected Clusters and Action Briefs">
+        {/* Section 2: Detected Building Clusters & Maintenance Briefs */}
+        <section aria-label="Multi-Issue Building Clusters">
           <ClusterActionBriefPanel
             clusters={clusters}
             selectedCluster={selectedCluster}
@@ -255,8 +253,8 @@ export default function TacticalDeckPage() {
           />
         </section>
 
-        {/* Section 3: Explainable Priority Triage Queue (Understand & Act Stage) */}
-        <section aria-label="Priority Triage and Operations Queue">
+        {/* Section 3: Explainable Triage Queue */}
+        <section aria-label="Facility Crew Operations Queue">
           <ExplainableTriageQueue
             reports={reports}
             selectedReport={selectedReport}
@@ -267,7 +265,7 @@ export default function TacticalDeckPage() {
         </section>
       </main>
 
-      {/* Dispatch Modal */}
+      {/* Crew Dispatch Modal */}
       <WorkflowDispatchModal
         report={dispatchTargetReport}
         isOpen={dispatchModalOpen}

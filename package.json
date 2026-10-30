@@ -1,8 +1,8 @@
 {
-  "name": "astra-grid-tactical",
-  "version": "1.0.0",
+  "name": "campusfix",
+  "version": "2.0.0",
   "private": true,
-  "description": "ASTRA-Grid Tactical: Enterprise AI-Powered Civic Crisis, Hotspot Detection & Explainable Triage Command Center. From Complaints to Action — AI for Civic Impact: Capture, Understand, Reveal, Act.",
+  "description": "CampusFix: Enterprise AI-Powered University & Smart-Facility Infrastructure Operations Platform. From Complaints to Action — AI for Campus Impact: Capture, Understand, Reveal, Act.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

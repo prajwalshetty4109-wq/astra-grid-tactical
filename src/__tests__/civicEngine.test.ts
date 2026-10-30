@@ -12,121 +12,121 @@ import {
   WorkflowUpdateInputSchema,
 } from "../lib/validators";
 
-describe("Civic Engine - Haversine Distance Calculation", () => {
+describe("CampusFix Civic Engine - Haversine Distance Calculation", () => {
   test("returns 0 meters for identical coordinates", () => {
     const dist = calculateHaversineDistanceMeters(12.97562, 77.60685, 12.97562, 77.60685);
     expect(dist).toBe(0);
   });
 
-  test("accurately calculates short urban distances within ~20 meters", () => {
-    // AST-101 and AST-102 coordinates (~12.97562, 77.60685 vs 12.97571, 77.60692)
+  test("accurately calculates short campus building distances (~10 to 25 meters)", () => {
+    // CF-101 and CF-102 coordinates in Science Block
     const dist = calculateHaversineDistanceMeters(12.97562, 77.60685, 12.97571, 77.60692);
     expect(dist).toBeGreaterThan(10);
     expect(dist).toBeLessThan(25);
   });
 
-  test("calculates distance between distant sectors (MG Road to Hebbal ~8.8km)", () => {
+  test("calculates distance across campus sectors (Science Block to Dorms ~8.8km)", () => {
     const dist = calculateHaversineDistanceMeters(12.97562, 77.60685, 13.03582, 77.59701);
     expect(dist).toBeGreaterThan(6000);
     expect(dist).toBeLessThan(10000);
   });
 });
 
-describe("Civic Engine - Text & Synonym Similarity", () => {
+describe("CampusFix Civic Engine - Text & Synonym Similarity", () => {
   test("returns 1.0 for identical sentences", () => {
-    const text = "Clogged storm water culvert causing severe waterlogging";
+    const text = "Overhead chilled water pipe rupture leaking onto lab electronics";
     const sim = calculateTextSimilarity(text, text);
     expect(sim).toBe(1.0);
   });
 
-  test("matches civic synonyms like pothole and crater", () => {
-    const textA = "Deep crater in the road asphalt";
-    const textB = "Massive pothole in tarmac";
+  test("matches campus facility synonyms like pipe leak and water burst", () => {
+    const textA = "Water pipe burst leaking onto floor";
+    const textB = "Drain pipe rupture with water flooding";
     const sim = calculateTextSimilarity(textA, textB);
-    expect(sim).toBeGreaterThan(0.3);
+    expect(sim).toBeGreaterThan(0.35);
   });
 
-  test("matches flood and waterlogging synonyms", () => {
-    const textA = "Knee-deep flood on pedestrian walkway";
-    const textB = "Severe waterlogging submerging sidewalk";
+  test("matches campus IT infrastructure synonyms like wifi and router access point", () => {
+    const textA = "Campus wifi network down in study commons";
+    const textB = "Router access point offline dropping network connection";
     const sim = calculateTextSimilarity(textA, textB);
     expect(sim).toBeGreaterThan(0.25);
   });
 
   test("returns 0 or near 0 for completely unrelated issues", () => {
-    const textA = "Overhanging tree branch near garden compost";
-    const textB = "Sparking live transformer submerged in water";
+    const textA = "Loose wooden armrest on student auditorium chair";
+    const textB = "Sparking live electrical conduit submerged in water";
     const sim = calculateTextSimilarity(textA, textB);
     expect(sim).toBeLessThan(0.15);
   });
 });
 
-describe("Civic Engine - Duplicate Detection", () => {
-  test("detects duplicate report within 250m with matching keywords", () => {
+describe("CampusFix Civic Engine - Duplicate Detection", () => {
+  test("detects duplicate campus complaint within building corridor with matching keywords", () => {
     const candidate = {
-      title: "Clogged stormwater drain grill on MG Road",
-      description: "Grating full of plastic bottles and silt overflowing onto walkway",
+      title: "Ceiling water pipe leak dripping into Chem Lab 304",
+      description: "Water pouring through acoustic tiles onto lab workbenches",
       latitude: 12.97565,
       longitude: 77.60688,
-      category: "WATERLOGGING" as const,
+      category: "PLUMBING" as const,
     };
 
     const result = findLikelyDuplicates(candidate, INITIAL_SYNTHETIC_REPORTS);
     expect(result.is_likely_duplicate).toBe(true);
     expect(result.matched_duplicate_id).toBeTruthy();
-    expect(result.duplicate_similarity).toBeGreaterThan(0.5);
+    expect(result.duplicate_similarity).toBeGreaterThan(0.45);
     expect(result.distance_meters).toBeLessThan(100);
   });
 
-  test("does not flag report in a different sector (>250m) as duplicate", () => {
+  test("does not flag report in a distant building (>250m) as duplicate", () => {
     const candidate = {
-      title: "Clogged stormwater drain grill",
-      description: "Grating full of plastic bottles and silt",
-      latitude: 12.9251, // Jayanagar, ~7km away from MG Road
+      title: "Ceiling water pipe leak dripping",
+      description: "Water pouring through tiles onto tables",
+      latitude: 12.9251, // Library, ~7km away from Science Block
       longitude: 77.5938,
-      category: "WATERLOGGING" as const,
+      category: "PLUMBING" as const,
     };
 
-    const mgRoadReports = INITIAL_SYNTHETIC_REPORTS.filter((r) => r.sub_area.includes("MG Road"));
-    const result = findLikelyDuplicates(candidate, mgRoadReports);
+    const scienceReports = INITIAL_SYNTHETIC_REPORTS.filter((r) => r.sub_area.includes("Science"));
+    const result = findLikelyDuplicates(candidate, scienceReports);
     expect(result.is_likely_duplicate).toBe(false);
   });
 });
 
-describe("Civic Engine - Explainable Priority Scoring", () => {
-  test("assigns CRITICAL priority (>90) to life-safety hazard in water", () => {
+describe("CampusFix Civic Engine - Explainable Priority Scoring", () => {
+  test("assigns CRITICAL priority (>90) to sparking electrical hazard in wet lab", () => {
     const report = {
-      category: "ELECTRICAL_HAZARD" as const,
-      title: "Exposed live wire sparking in knee-deep floodwater",
-      description: "Severe shock danger near busy metro entrance",
+      category: "ELECTRICAL" as const,
+      title: "Sparking 220V wall outlet submerged in ceiling leak runoff",
+      description: "Active smoke and electrical arcing near chemical benches",
       latitude: 12.9756,
       longitude: 77.6069,
-      sub_area: "Sector 1: MG Road Metro Corridor",
+      sub_area: "Science Block Wing B",
     };
 
-    const mgRoadReports = INITIAL_SYNTHETIC_REPORTS.filter((r) => r.sub_area.includes("MG Road"));
-    const priority = computeExplainablePriority(report, mgRoadReports);
+    const scienceReports = INITIAL_SYNTHETIC_REPORTS.filter((r) => r.sub_area.includes("Science"));
+    const priority = computeExplainablePriority(report, scienceReports);
 
     expect(priority.priority_score).toBeGreaterThanOrEqual(90);
     expect(priority.priority_level).toBe("CRITICAL");
     expect(priority.priority_factors.safetyRiskScore).toBeGreaterThanOrEqual(35);
     expect(priority.priority_factors.cascadeImpactScore).toBeGreaterThanOrEqual(20);
-    expect(priority.ai_explanation).toContain("Life Safety");
+    expect(priority.ai_explanation).toContain("Safety & Hazard");
   });
 
-  test("assigns LOW or MEDIUM priority (<55) to routine residential requests", () => {
+  test("assigns LOW priority (<40) to minor classroom furniture defects", () => {
     const report = {
-      category: "ROAD_DAMAGE" as const,
-      title: "Slight paint fading on residential speed breaker",
-      description: "Thermoplastic markings are somewhat dull",
-      latitude: 12.9338,
-      longitude: 77.6261,
-      sub_area: "Sector 5: Koramangala Drain Belt",
+      category: "FURNITURE" as const,
+      title: "Bent marker tray on seminar room whiteboard",
+      description: "Dry-erase tray is slightly bent at corner",
+      latitude: 12.9765,
+      longitude: 77.6421,
+      sub_area: "Engineering Wing",
     };
 
     const priority = computeExplainablePriority(report, []);
-    expect(priority.priority_score).toBeLessThanOrEqual(55);
-    expect(["LOW", "MEDIUM"]).toContain(priority.priority_level);
+    expect(priority.priority_score).toBeLessThanOrEqual(40);
+    expect(priority.priority_level).toBe("LOW");
   });
 
   test("priority factors mathematically sum to total priority score", () => {
@@ -139,12 +139,11 @@ describe("Civic Engine - Explainable Priority Scoring", () => {
   });
 });
 
-describe("Civic Engine - Hotspot Cluster Detection", () => {
-  test("detects multi-issue clusters from pre-seeded 36 reports", () => {
+describe("CampusFix Civic Engine - Hotspot Cluster Detection", () => {
+  test("detects multi-issue building clusters from pre-seeded 36 campus reports", () => {
     const clusters = detectGeographicClusters(INITIAL_SYNTHETIC_REPORTS);
     expect(clusters.length).toBeGreaterThanOrEqual(3);
 
-    // Verify top cluster has multiple categories (interconnected problems)
     const topCluster = clusters[0];
     expect(topCluster.reportCount).toBeGreaterThanOrEqual(5);
     expect(topCluster.categories.length).toBeGreaterThanOrEqual(2);
@@ -154,7 +153,7 @@ describe("Civic Engine - Hotspot Cluster Detection", () => {
   });
 });
 
-describe("Civic Engine - Zod Input & State Validators", () => {
+describe("CampusFix Civic Engine - Zod Input & State Validators", () => {
   test("validates all 36 pre-seeded reports conform to CivicReportSchema", () => {
     for (const report of INITIAL_SYNTHETIC_REPORTS) {
       const parsed = CivicReportSchema.safeParse(report);
@@ -162,15 +161,15 @@ describe("Civic Engine - Zod Input & State Validators", () => {
     }
   });
 
-  test("validates valid citizen submission input", () => {
+  test("validates valid student submission input", () => {
     const valid = {
-      title: "Broken water line spilling into street",
-      description: "Pipe cracked under sidewalk sending potable water everywhere",
-      category: "WATER_SUPPLY",
-      sub_area: "Sector 4: Indiranagar 100ft Cross",
-      address: "100ft Road, opposite KFC",
-      latitude: 12.9784,
-      longitude: 77.6408,
+      title: "Restroom faucet leaking continuously",
+      description: "Sink faucet #3 won't shut off and is overflowing onto the floor",
+      category: "PLUMBING",
+      sub_area: "Central Library Commons",
+      address: "1st Floor Restrooms, Library",
+      latitude: 12.9251,
+      longitude: 77.5938,
     };
     const parsed = SubmitReportInputSchema.safeParse(valid);
     expect(parsed.success).toBe(true);
@@ -180,8 +179,8 @@ describe("Civic Engine - Zod Input & State Validators", () => {
     const invalid = {
       title: "No",
       description: "Bad",
-      sub_area: "Sector 1",
-      address: "MG Road",
+      sub_area: "Science",
+      address: "Room 101",
       latitude: 12.9,
       longitude: 77.6,
     };
@@ -191,10 +190,10 @@ describe("Civic Engine - Zod Input & State Validators", () => {
 
   test("validates workflow dispatch update schema", () => {
     const valid = {
-      reportId: "AST-101",
+      reportId: "CF-101",
       status: "ASSIGNED",
-      assigned_department: "STORM_DRAINAGE",
-      dispatch_notes: "Hydro-jetting unit 4 dispatched to site.",
+      assigned_department: "PLUMBING_OPS",
+      dispatch_notes: "Emergency plumbing crew dispatched to isolate ceiling riser valve.",
     };
     const parsed = WorkflowUpdateInputSchema.safeParse(valid);
     expect(parsed.success).toBe(true);

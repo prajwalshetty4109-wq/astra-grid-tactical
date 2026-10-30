@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { TacticalNavbar } from "@/components/TacticalNavbar";
 import { CitizenCaptureForm } from "@/components/CitizenCaptureForm";
-import { ShieldCheck, Zap, Radio, Clock } from "lucide-react";
+import { Radio, Building2 } from "lucide-react";
 
 export default function ReportPage() {
   const router = useRouter();
@@ -12,10 +12,10 @@ export default function ReportPage() {
   return (
     <>
       <Head>
-        <title>Citizen Rapid Intake Portal | ASTRA-Grid Tactical</title>
+        <title>Student & Staff Facility Intake | CampusFix</title>
         <meta
           name="description"
-          content="Rapid <60s mobile-ready citizen intake for civic hazards with instant Gemini 2.5 Flash explainable triage and duplicate checking."
+          content="Rapid <60s mobile-ready campus facility intake with instant Gemini 2.5 Flash explainable triage and duplicate checking."
         />
       </Head>
 
@@ -23,12 +23,12 @@ export default function ReportPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col items-center">
         {/* Header Ribbon */}
-        <div className="w-full max-w-3xl mb-6 flex items-center justify-between font-mono text-xs text-slate-400 border-b border-slate-800 pb-3">
+        <div className="w-full max-w-3xl mb-6 flex items-center justify-between font-mono text-xs text-neutral-400 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-tactical-cyan animate-pulse" />
-            <span className="text-white font-bold">STAGE 1: CITIZEN CAPTURE PORTAL</span>
+            <Radio className="w-4 h-4 text-white animate-pulse" />
+            <span className="text-white font-bold">STAGE 1: STUDENT & STAFF INTAKE</span>
           </div>
-          <span className="text-tactical-cyan">&lt;60-Second Mobile Intake</span>
+          <span className="text-neutral-400">&lt;60-Second Mobile Intake</span>
         </div>
 
         {/* Citizen Form Component */}

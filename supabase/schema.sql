@@ -1,34 +1,79 @@
--- Supabase Schema for ASTRA-Grid Tactical Command Center
-create extension if not exists "pgcrypto";
+-- CampusFix — Supabase PostgreSQL Schema
+-- Run this in the Supabase SQL editor to initialize the database.
+-- CampusFix auto-seeds with 36 campus reports on first API call if the table is empty.
+-- All reports use the CF-XXXX ticket ID prefix (Science Block: CF-101 to CF-110,
+-- Central Library: CF-201 to CF-208, Student Dorms: CF-301 to CF-307, Scattered: CF-401 to CF-603).
 
-create table if not exists civic_reports (
-  id text primary key,
-  title text not null,
-  description text not null,
-  category text not null,
-  sub_area text not null,
-  address text not null,
-  latitude numeric(9,6) not null,
-  longitude numeric(9,6) not null,
-  image_url text,
-  status text not null default 'AI_TRIAGED' check (status in ('SUBMITTED', 'AI_TRIAGED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED')),
-  assigned_department text,
-  dispatch_notes text,
-  priority_score integer not null default 50,
-  priority_level text not null default 'MEDIUM' check (priority_level in ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')),
-  ai_summary text not null,
-  ai_explanation text not null,
-  priority_factors jsonb not null default '{}'::jsonb,
-  duplicate_of_id text,
-  duplicate_count integer not null default 1,
-  duplicate_similarity numeric(4,2) default 0,
-  cluster_id text,
-  reporter_phone_masked text default '***-***-4821',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+-- ─── Main Reports Table ──────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS civic_reports (
+  id                  TEXT         PRIMARY KEY,
+  title               TEXT         NOT NULL,
+  description         TEXT         NOT NULL,
+  category            TEXT         NOT NULL
+                      CHECK (category IN ('IT_INFRA','PLUMBING','ELECTRICAL','HVAC','SANITATION','FURNITURE')),
+  latitude            NUMERIC(10,7) NOT NULL,
+  longitude           NUMERIC(10,7) NOT NULL,
+  address             TEXT         NOT NULL,
+  status              TEXT         NOT NULL DEFAULT 'SUBMITTED'
+                      CHECK (status IN ('SUBMITTED','AI_TRIAGED','DISPATCHED','IN_PROGRESS','RESOLVED','CLOSED')),
+  priority_score      NUMERIC(5,2) NOT NULL DEFAULT 0,
+  priority_label      TEXT         NOT NULL DEFAULT 'UNKNOWN'
+                      CHECK (priority_label IN ('CRITICAL','HIGH','MEDIUM','LOW','UNKNOWN')),
+  priority_factors    JSONB        NOT NULL DEFAULT '{}',
+  ai_summary          TEXT,
+  ai_reasoning        TEXT,
+  assigned_department TEXT,
+  dispatch_notes      TEXT,
+  duplicate_of_id     TEXT         REFERENCES civic_reports(id) ON DELETE SET NULL,
+  duplicate_count     INTEGER      NOT NULL DEFAULT 1,
+  duplicate_similarity NUMERIC(5,4) NOT NULL DEFAULT 0,
+  image_base64        TEXT,
+  reporter_name       TEXT,
+  created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
-alter table civic_reports enable row level security;
-create policy "Public read access civic_reports" on civic_reports for select using (true);
-create policy "Public write access civic_reports" on civic_reports for all using (true) with check (true);
-alter publication supabase_realtime add table civic_reports;
+-- ─── Indexes ─────────────────────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_civic_reports_status
+  ON civic_reports(status);
+
+CREATE INDEX IF NOT EXISTS idx_civic_reports_priority
+  ON civic_reports(priority_score DESC);
+
+CREATE INDEX IF NOT EXISTS idx_civic_reports_category
+  ON civic_reports(category);
+
+CREATE INDEX IF NOT EXISTS idx_civic_reports_created
+  ON civic_reports(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_civic_reports_duplicate_of
+  ON civic_reports(duplicate_of_id)
+  WHERE duplicate_of_id IS NOT NULL;
+
+-- ─── Auto-update updated_at Trigger ──────────────────────────────────────────
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_updated_at ON civic_reports;
+CREATE TRIGGER set_updated_at
+  BEFORE UPDATE ON civic_reports
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ─── Row Level Security (recommended for production) ─────────────────────────
+-- Enable RLS and allow public reads for the hackathon demo.
+-- Tighten these policies before deploying to production.
+ALTER TABLE civic_reports ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access"
+  ON civic_reports FOR SELECT
+  USING (true);
+
+CREATE POLICY "Allow service role full access"
+  ON civic_reports FOR ALL
+  USING (auth.role() = 'service_role');

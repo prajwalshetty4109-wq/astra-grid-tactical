@@ -9,3 +9,4 @@ export const isGeminiConfigured = (): boolean => {
   const key = process.env.GEMINI_API_KEY;
   return Boolean(key && key.trim().length > 10 && !key.includes("your-gemini"));
 };
+

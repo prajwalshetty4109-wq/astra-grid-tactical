@@ -8,9 +8,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   return res.status(200).json({
     status: "OK",
-    service: "astra-grid-tactical",
+    service: "campusfix",
     googleGenAiReady: isGeminiConfigured(),
     timestamp: new Date().toISOString(),
-    version: "1.0.0",
+    version: "2.0.0",
   });
 }

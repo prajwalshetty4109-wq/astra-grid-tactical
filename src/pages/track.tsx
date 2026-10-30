@@ -9,23 +9,21 @@ import {
   Search,
   CheckCircle2,
   Clock,
-  Shield,
-  Truck,
+  Wrench,
   Layers,
   Sparkles,
   GitMerge,
   ArrowRight,
-  AlertTriangle,
+  Building2,
 } from "lucide-react";
 
 export default function TrackPage() {
   const router = useRouter();
-  const [reportIdInput, setReportIdInput] = useState("AST-109");
+  const [reportIdInput, setReportIdInput] = useState("CF-104");
   const [currentReport, setCurrentReport] = useState<CivicReport | null>(null);
   const [reports, setReports] = useState<CivicReport[]>(INITIAL_SYNTHETIC_REPORTS);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // Load state from backend
   useEffect(() => {
     fetch("/api/reports/state")
       .then((res) => res.json())
@@ -37,9 +35,8 @@ export default function TrackPage() {
       .catch((err) => console.warn("Track state fallback:", err));
   }, []);
 
-  // Update lookup based on URL parameter or default
   useEffect(() => {
-    const id = (router.query.id as string) || "AST-109";
+    const id = (router.query.id as string) || "CF-104";
     setReportIdInput(id);
     const found = reports.find((r) => r.id.toLowerCase() === id.toLowerCase());
     if (found) {
@@ -59,18 +56,18 @@ export default function TrackPage() {
       setSearchError(null);
       router.push(`/track?id=${found.id}`, undefined, { shallow: true });
     } else {
-      setSearchError(`Report ticket #${query} not found in operational database.`);
+      setSearchError(`Ticket #${query} not found in facility database.`);
     }
   };
 
-  const sampleTickets = ["AST-109", "AST-101", "AST-201", "AST-301", "AST-401", "AST-504"];
+  const sampleTickets = ["CF-104", "CF-101", "CF-201", "CF-301", "CF-401", "CF-502"];
 
   const steps = [
-    { key: "SUBMITTED", label: "Citizen Intake Captured", desc: "Logged via mobile/web portal" },
-    { key: "AI_TRIAGED", label: "Gemini 2.5 Flash Triaged", desc: "Prioritized & checked for duplicates" },
-    { key: "ASSIGNED", label: "Department Assigned", desc: "Assigned to specialized response unit" },
-    { key: "IN_PROGRESS", label: "Field Operations Active", desc: "Crews on-site conducting repairs" },
-    { key: "RESOLVED", label: "Hazard Neutralized", desc: "Verified restored to safety standards" },
+    { key: "SUBMITTED", label: "Student Intake Logged", desc: "Submitted via campus portal" },
+    { key: "AI_TRIAGED", label: "Gemini 2.5 Flash Triaged", desc: "Prioritized & duplicate checked" },
+    { key: "ASSIGNED", label: "Maintenance Crew Alerted", desc: "Assigned to specialized team" },
+    { key: "IN_PROGRESS", label: "Technician On-Site", desc: "Repairs actively underway" },
+    { key: "RESOLVED", label: "Restoration Signed Off", desc: "Tested and verified functional" },
   ];
 
   const getStepStatus = (stepKey: string, currentStatus: string) => {
@@ -86,51 +83,51 @@ export default function TrackPage() {
   return (
     <>
       <Head>
-        <title>Citizen Transparency Tracker | ASTRA-Grid Tactical</title>
+        <title>Live Student Resolution Tracker | CampusFix</title>
       </Head>
 
       <TacticalNavbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
         {/* Title Header */}
-        <div className="border-b border-slate-800 pb-4">
-          <div className="flex items-center gap-2 text-tactical-cyan font-mono text-xs uppercase tracking-wider mb-1">
+        <div className="border-b border-white/10 pb-4">
+          <div className="flex items-center gap-2 text-white font-mono text-xs uppercase tracking-wider mb-1 font-semibold">
             <Clock className="w-4 h-4" />
-            Stage 4 • Public Citizen Transparency & Real-Time Tracking
+            Stage 4 • Student Transparency & Real-Time Resolution Timeline
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Civic Incident Resolution Timeline
+            Campus Work Order Resolution Timeline
           </h1>
-          <p className="text-xs text-slate-400 mt-1 font-sans">
-            Follow your complaint from initial citizen capture, through Gemini 2.5 Flash triage and multi-department dispatch, to final on-site resolution.
+          <p className="text-xs text-neutral-400 mt-1 font-sans">
+            Track your facility maintenance request from student capture, through Gemini 2.5 Flash triage and crew assignment, to final on-site repair.
           </p>
         </div>
 
-        {/* Report ID Search Bar */}
-        <div className="rounded-xl border border-slate-800 bg-obsidian-900/90 p-4 shadow-xl">
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
+        {/* Ticket Lookup Bar */}
+        <div className="rounded-2xl border border-white/15 bg-neutral-950 p-5 shadow-3d-card">
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2.5">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-neutral-500" />
               <input
                 type="text"
                 value={reportIdInput}
                 onChange={(e) => setReportIdInput(e.target.value)}
-                placeholder="Enter Ticket ID (e.g. AST-109)..."
-                className="w-full pl-9 pr-4 py-2 rounded-lg bg-obsidian-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-tactical-cyan font-mono text-xs"
-                aria-label="Search Report ID"
+                placeholder="Enter Ticket ID (e.g. CF-104)..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-white font-mono text-xs"
+                aria-label="Search Ticket ID"
               />
             </div>
             <button
               type="submit"
-              className="px-5 py-2 rounded-lg bg-tactical-cyan text-obsidian-950 font-mono text-xs font-bold hover:bg-cyan-300 transition"
+              className="px-6 py-2.5 rounded-xl bg-white text-black font-mono text-xs font-bold hover:bg-neutral-200 transition shadow-[0_2px_8px_rgba(255,255,255,0.2)]"
             >
               Track Ticket
             </button>
           </form>
 
           {/* Quick-Select Sample Tickets */}
-          <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800/80 text-xs font-mono">
-            <span className="text-slate-500">Sample Tickets:</span>
+          <div className="flex flex-wrap items-center gap-2 mt-3.5 pt-3 border-t border-white/10 text-xs font-mono">
+            <span className="text-neutral-500">Sample Tickets:</span>
             {sampleTickets.map((tId) => (
               <button
                 key={tId}
@@ -139,10 +136,10 @@ export default function TrackPage() {
                   const found = reports.find((r) => r.id === tId);
                   if (found) setCurrentReport(found);
                 }}
-                className={`px-2 py-0.5 rounded border text-[11px] transition ${
+                className={`px-2.5 py-1 rounded-md border text-[11px] transition ${
                   currentReport?.id === tId
-                    ? "bg-slate-800 border-tactical-cyan text-tactical-cyan font-bold"
-                    : "bg-obsidian-950 border-slate-800 text-slate-400 hover:text-slate-200"
+                    ? "bg-white text-black border-white font-bold shadow-sm"
+                    : "bg-black border-white/10 text-neutral-400 hover:text-white"
                 }`}
               >
                 #{tId}
@@ -151,122 +148,121 @@ export default function TrackPage() {
           </div>
 
           {searchError && (
-            <div className="mt-3 p-2 rounded bg-tactical-crimson/20 border border-tactical-crimson/40 text-tactical-crimson text-xs font-mono">
+            <div className="mt-3 p-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono">
               {searchError}
             </div>
           )}
         </div>
 
-        {/* Selected Report Details & Timeline */}
+        {/* Selected Ticket Details & Timeline */}
         {currentReport && (
-          <div className="rounded-xl border border-slate-800 bg-obsidian-900/95 p-6 shadow-2xl flex flex-col gap-6 reticle-corner">
+          <div className="rounded-2xl border border-white/15 bg-neutral-950 p-6 sm:p-8 shadow-3d-card flex flex-col gap-6 reticle-corner-white">
             {/* Header Meta */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-base font-bold text-tactical-cyan">
+                  <span className="font-mono text-base font-bold text-white">
                     #{currentReport.id}
                   </span>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 border border-white/10">
                     {currentReport.category}
                   </span>
                 </div>
                 <h2 className="text-base font-semibold text-white mt-1">
                   {currentReport.title}
                 </h2>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">
-                  📍 {currentReport.address} ({currentReport.sub_area})
+                <p className="text-xs text-neutral-400 font-mono mt-0.5">
+                  📍 {currentReport.sub_area} • {currentReport.address}
                 </p>
               </div>
 
               {/* Priority & Status Badges */}
-              <div className="flex flex-col items-start sm:items-end gap-1 font-mono text-xs">
-                <span className="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-200">
-                  STATUS: <strong className="text-tactical-cyan">{currentReport.status}</strong>
+              <div className="flex flex-col items-start sm:items-end gap-1.5 font-mono text-xs">
+                <span className="px-3 py-1 rounded-md bg-neutral-900 border border-white/15 text-white">
+                  STATUS: <strong className="text-white">{currentReport.status}</strong>
                 </span>
-                <span className="text-[11px] text-slate-400">
-                  Priority Score: <strong className="text-tactical-crimson">{currentReport.priority_score}/100</strong>
+                <span className="text-[11px] text-neutral-400">
+                  Priority Score: <strong className="text-white">{currentReport.priority_score}/100</strong>
                 </span>
               </div>
             </div>
 
             {/* Stepper Progress Timeline */}
             <div>
-              <div className="font-mono text-xs text-slate-400 uppercase tracking-wider mb-4">
-                Operational Progress Steps
+              <div className="font-mono text-xs text-neutral-400 uppercase tracking-wider mb-4 font-bold">
+                Resolution Timeline
               </div>
               <div className="relative flex flex-col sm:flex-row justify-between gap-4">
                 {steps.map((step, idx) => {
                   const status = getStepStatus(step.key, currentReport.status);
                   return (
                     <div key={step.key} className="flex-1 flex flex-col items-start sm:items-center text-left sm:text-center">
-                      {/* Step Circle */}
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center font-mono text-xs font-bold mb-2 transition ${
                           status === "COMPLETED"
-                            ? "bg-tactical-emerald text-obsidian-950 shadow-emerald-glow"
+                            ? "bg-white text-black shadow-[0_2px_10px_rgba(255,255,255,0.3)]"
                             : status === "CURRENT"
-                            ? "bg-tactical-cyan text-obsidian-950 animate-pulse shadow-cyan-glow"
-                            : "bg-obsidian-950 border border-slate-800 text-slate-500"
+                            ? "bg-neutral-800 text-white border-2 border-white animate-pulse"
+                            : "bg-black border border-white/15 text-neutral-600"
                         }`}
                       >
-                        {status === "COMPLETED" ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
+                        {status === "COMPLETED" ? <CheckCircle2 className="w-4 h-4 text-black" /> : idx + 1}
                       </div>
                       <div className="text-xs font-bold text-white font-mono">{step.label}</div>
-                      <div className="text-[10px] text-slate-400 font-sans mt-0.5">{step.desc}</div>
+                      <div className="text-[10px] text-neutral-400 font-sans mt-0.5">{step.desc}</div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Dispatch & Operations Status Details */}
+            {/* Crew & Dispatch Notes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="rounded-lg bg-obsidian-950 border border-slate-800 p-4">
-                <span className="text-slate-400 block text-[10px] uppercase font-semibold mb-1">
-                  Lead Municipal Department
+              <div className="rounded-xl bg-neutral-900 border border-white/10 p-4 shadow-3d-subtle">
+                <span className="text-neutral-400 block text-[10px] uppercase font-bold mb-1">
+                  Assigned Maintenance Crew
                 </span>
-                <span className="text-sm font-bold text-tactical-cyan">
-                  {currentReport.assigned_department || "MUNICIPAL DISPATCH PENDING"}
+                <span className="text-sm font-bold text-white">
+                  {currentReport.assigned_department || "FACILITY DISPATCH PENDING"}
                 </span>
-                <p className="text-slate-400 text-[11px] mt-1 font-sans">
+                <p className="text-neutral-400 text-[11px] mt-1 font-sans">
                   {currentReport.assigned_department
-                    ? "Unit mobilized under high-priority emergency municipal protocols."
-                    : "AI triaged; waiting for sector supervisor confirmation."}
+                    ? "Work order authorized under campus high-priority maintenance protocols."
+                    : "AI triaged; waiting for building supervisor confirmation."}
                 </p>
               </div>
 
-              <div className="rounded-lg bg-obsidian-950 border border-slate-800 p-4">
-                <span className="text-slate-400 block text-[10px] uppercase font-semibold mb-1">
-                  Field Crew & Dispatch Log
+              <div className="rounded-xl bg-neutral-900 border border-white/10 p-4 shadow-3d-subtle">
+                <span className="text-neutral-400 block text-[10px] uppercase font-bold mb-1">
+                  Field Technician Log
                 </span>
-                <p className="text-slate-200 text-xs font-sans">
-                  {currentReport.dispatch_notes || "Awaiting initial field crew status log."}
+                <p className="text-neutral-200 text-xs font-sans">
+                  {currentReport.dispatch_notes || "Awaiting initial technician on-site status log."}
                 </p>
               </div>
             </div>
 
-            {/* Duplicate Consolidation Information */}
+            {/* Duplicate Community Corroboration */}
             {currentReport.duplicate_count && currentReport.duplicate_count > 1 ? (
-              <div className="rounded-lg bg-cyan-950/20 border border-tactical-cyan/40 p-4 text-xs font-mono text-slate-300 flex items-start gap-3">
-                <GitMerge className="w-5 h-5 text-tactical-cyan shrink-0 mt-0.5" />
+              <div className="rounded-xl bg-neutral-900 border border-white/20 p-4 text-xs font-mono text-neutral-300 flex items-start gap-3 shadow-3d-subtle">
+                <GitMerge className="w-5 h-5 text-white shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-tactical-cyan">
-                    Community Corroboration Active ({currentReport.duplicate_count} Linked Citizen Reports):
+                  <strong className="text-white">
+                    Campus Corroboration Active ({currentReport.duplicate_count} Linked Student Reports):
                   </strong>
-                  <p className="text-slate-300 text-xs font-sans mt-1">
-                    Multiple neighbors within 250m reported this identical issue. Rather than dispersing crews, ASTRA-Grid consolidated these reports into this master ticket, boosting its priority score to ensure rapid emergency dispatch.
+                  <p className="text-neutral-400 text-xs font-sans mt-1">
+                    Multiple students in this building wing reported this exact problem. Rather than dispatching redundant crews, CampusFix consolidated these tickets into this master work order to boost priority.
                   </p>
                 </div>
               </div>
             ) : null}
 
             {/* Explainable AI Reasoning */}
-            <div className="rounded-lg bg-obsidian-950 border border-slate-800 p-4 text-xs">
-              <span className="text-tactical-cyan font-mono text-[10px] block uppercase font-bold mb-1">
+            <div className="rounded-xl bg-neutral-900 border border-white/10 p-4 text-xs">
+              <span className="text-white font-mono text-[10px] block uppercase font-bold mb-1">
                 Why was this priority assigned? (Explainable AI Transparency)
               </span>
-              <p className="text-slate-300 font-sans leading-relaxed text-xs">
+              <p className="text-neutral-300 font-sans leading-relaxed text-xs">
                 {currentReport.ai_explanation}
               </p>
             </div>
