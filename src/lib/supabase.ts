@@ -5,6 +5,12 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 
 let cachedClient: SupabaseClient | null = null;
 
+/**
+ * Returns a cached Supabase client if valid credentials exist,
+ * or null to allow the application to gracefully fall back to the in-memory store.
+ *
+ * @returns SupabaseClient | null
+ */
 export const getSupabaseClient = (): SupabaseClient | null => {
   if (cachedClient) return cachedClient;
 
@@ -24,9 +30,8 @@ export const getSupabaseClient = (): SupabaseClient | null => {
       },
     });
     return cachedClient;
-  } catch (err) {
-    console.warn("Supabase initialization skipped, using resilient memory store:", err);
+  } catch {
+    // Graceful fallback to in-memory store
     return null;
   }
 };
-

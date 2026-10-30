@@ -10,17 +10,26 @@ import { CivicReport, HotspotCluster } from "@/lib/validators";
 import { INITIAL_SYNTHETIC_REPORTS } from "@/lib/syntheticReports";
 import { detectGeographicClusters } from "@/lib/civicEngine";
 import {
-  Building2,
-  AlertTriangle,
   Zap,
-  Activity,
   Layers,
   CheckCircle,
   GitMerge,
   Cpu,
-  Wrench,
 } from "lucide-react";
 
+/** Operational KPI metrics displayed in the campus deck ribbon. */
+interface CampusKpis {
+  totalReports: number;
+  criticalCount: number;
+  highCount: number;
+  resolvedCount: number;
+  inProgressCount: number;
+  duplicatesDetected: number;
+  activeHotspots: number;
+  avgPriorityScore: number;
+}
+
+/** Campus operations dashboard — Stage 3 (Reveal) and Stage 4 (Act). */
 export default function CampusDeckPage() {
   const router = useRouter();
   const [reports, setReports] = useState<CivicReport[]>(INITIAL_SYNTHETIC_REPORTS);
@@ -31,7 +40,7 @@ export default function CampusDeckPage() {
   const [selectedCluster, setSelectedCluster] = useState<HotspotCluster | null>(null);
   const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
   const [dispatchTargetReport, setDispatchTargetReport] = useState<CivicReport | null>(null);
-  const [kpis, setKpis] = useState({
+  const [kpis, setKpis] = useState<CampusKpis>({
     totalReports: 36,
     criticalCount: 14,
     highCount: 5,
@@ -51,8 +60,8 @@ export default function CampusDeckPage() {
         if (data.clusters) setClusters(data.clusters);
         if (data.kpis) setKpis(data.kpis);
       }
-    } catch (err) {
-      console.warn("Using in-memory campus baseline:", err);
+    } catch {
+      // Graceful fallback to in-memory campus baseline
     }
   };
 
@@ -107,8 +116,8 @@ export default function CampusDeckPage() {
         if (data.success) {
           fetchState();
         }
-      } catch (err) {
-        console.error("Duplicate merge failed:", err);
+      } catch {
+        // Merge request failed silently — user can retry
       }
     }
   };
@@ -140,7 +149,7 @@ export default function CampusDeckPage() {
         onTriggerDemoStep={handleJudgeDemoStep}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+      <main id="main-content" role="main" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
         {/* Top Operations 3D KPI Ribbon */}
         <section aria-label="Campus Operations Metrics">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -148,7 +157,7 @@ export default function CampusDeckPage() {
             <div className="rounded-xl border border-white/10 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
               <div className="flex items-center justify-between text-neutral-400 text-xs font-mono font-medium">
                 <span>TOTAL TICKETS</span>
-                <Layers className="w-3.5 h-3.5 text-neutral-500" />
+                <Layers className="w-3.5 h-3.5 text-neutral-500" aria-hidden="true" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-mono text-2xl font-bold text-white">{kpis.totalReports}</span>
@@ -160,7 +169,7 @@ export default function CampusDeckPage() {
             <div className="rounded-xl border border-white/30 bg-neutral-900 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
               <div className="flex items-center justify-between text-white text-xs font-mono font-bold">
                 <span>CRITICAL HAZARDS</span>
-                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-white animate-ping" aria-hidden="true" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-mono text-2xl font-extrabold text-white">
@@ -174,7 +183,7 @@ export default function CampusDeckPage() {
             <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
               <div className="flex items-center justify-between text-neutral-300 text-xs font-mono font-bold">
                 <span>BUILDING CLUSTERS</span>
-                <Zap className="w-3.5 h-3.5 text-white" />
+                <Zap className="w-3.5 h-3.5 text-white" aria-hidden="true" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-mono text-2xl font-bold text-white">
@@ -188,7 +197,7 @@ export default function CampusDeckPage() {
             <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
               <div className="flex items-center justify-between text-neutral-300 text-xs font-mono font-bold">
                 <span>DUPLICATES LINKED</span>
-                <GitMerge className="w-3.5 h-3.5 text-white" />
+                <GitMerge className="w-3.5 h-3.5 text-white" aria-hidden="true" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-mono text-2xl font-bold text-white">
@@ -202,7 +211,7 @@ export default function CampusDeckPage() {
             <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
               <div className="flex items-center justify-between text-neutral-300 text-xs font-mono font-bold">
                 <span>CREW DISPATCHED</span>
-                <CheckCircle className="w-3.5 h-3.5 text-white" />
+                <CheckCircle className="w-3.5 h-3.5 text-white" aria-hidden="true" />
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-mono text-2xl font-bold text-white">
@@ -216,7 +225,7 @@ export default function CampusDeckPage() {
             <div className="rounded-xl border border-white/15 bg-neutral-950 p-4 flex flex-col justify-between shadow-3d-card hover:-translate-y-0.5 transition-all">
               <div className="flex items-center justify-between text-neutral-400 text-xs font-mono">
                 <span>AI TRIAGE ENGINE</span>
-                <Cpu className="w-3.5 h-3.5 text-white animate-pulse" />
+                <Cpu className="w-3.5 h-3.5 text-white animate-pulse" aria-hidden="true" />
               </div>
               <div className="mt-2 flex flex-col">
                 <span className="font-mono text-xs font-bold text-white">Gemini 2.5 Flash</span>
@@ -244,7 +253,7 @@ export default function CampusDeckPage() {
             clusters={clusters}
             selectedCluster={selectedCluster}
             onSelectCluster={handleSelectCluster}
-            onDispatchCluster={(cluster, brief) => {
+            onDispatchCluster={(cluster) => {
               const primaryReport = cluster.reports[0];
               if (primaryReport) {
                 handleOpenDispatch(primaryReport);

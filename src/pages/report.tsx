@@ -21,7 +21,7 @@ export default function ReportPage() {
 
       <TacticalNavbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col items-center">
+      <main id="main-content" role="main" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col items-center">
         {/* Header Ribbon */}
         <div className="w-full max-w-3xl mb-6 flex items-center justify-between font-mono text-xs text-neutral-400 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">

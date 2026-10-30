@@ -1,13 +1,8 @@
-import React, { useState } from "react";
-import { CivicReport, ReportStatus, MaintenanceCrew } from "@/lib/validators";
+import React, { useState, useEffect } from "react";
+import { CivicReport, ReportStatus } from "@/lib/validators";
 import {
   X,
   Send,
-  Wrench,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
   Building2,
 } from "lucide-react";
 
@@ -18,23 +13,53 @@ interface WorkflowDispatchModalProps {
   onSuccess: (updatedReport: CivicReport) => void;
 }
 
+/**
+ * Facility maintenance dispatch modal dialog with role="dialog", aria-modal="true",
+ * and keyboard Escape key dismissal support.
+ */
 export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
   report,
   isOpen,
   onClose,
   onSuccess,
 }) => {
-  if (!isOpen || !report) return null;
-
-  const [status, setStatus] = useState<ReportStatus>(report.status);
+  const [status, setStatus] = useState<ReportStatus>(report?.status || "AI_TRIAGED");
   const [department, setDepartment] = useState<string>(
-    report.assigned_department || "PLUMBING_OPS"
+    report?.assigned_department || "PLUMBING_OPS"
   );
   const [dispatchNotes, setDispatchNotes] = useState<string>(
-    report.dispatch_notes || ""
+    report?.dispatch_notes || ""
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Sync state when report changes
+  useEffect(() => {
+    if (report) {
+      setStatus(report.status);
+      setDepartment(report.assigned_department || "PLUMBING_OPS");
+      setDispatchNotes(report.dispatch_notes || "");
+      setErrorMsg(null);
+    }
+  }, [report]);
+
+  // Handle Escape key navigation
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !report) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,9 +85,9 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
       } else {
         setErrorMsg(data.error || "Failed to update workflow state");
       }
-    } catch (err: any) {
-      console.error("Workflow submission error:", err);
-      setErrorMsg(err.message || "Network error submitting crew dispatch");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Network error submitting crew dispatch";
+      setErrorMsg(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +104,7 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-white" />
+            <Building2 className="w-5 h-5 text-white" aria-hidden="true" />
             <h2 id="dispatch-modal-title" className="font-mono text-sm font-bold text-white tracking-wide">
               FACILITY CREW DISPATCH & ASSIGNMENT
             </h2>
@@ -87,9 +112,9 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
           <button
             onClick={onClose}
             className="text-neutral-400 hover:text-white p-1 rounded-md hover:bg-neutral-900 transition"
-            aria-label="Close modal"
+            aria-label="Close dispatch dialog (Press Escape)"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
@@ -108,7 +133,11 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
         </div>
 
         {errorMsg && (
-          <div className="mb-3 p-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono">
+          <div
+            role="alert"
+            aria-live="polite"
+            className="mb-3 p-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono"
+          >
             {errorMsg}
           </div>
         )}
@@ -117,10 +146,12 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs font-mono">
           {/* Crew Selection */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold">
+            <label htmlFor="assign-department" className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold">
               Assign Campus Maintenance Team
             </label>
             <select
+              id="assign-department"
+              aria-label="Assign campus maintenance team"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white focus:outline-none focus:border-white text-xs"
@@ -136,10 +167,12 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
 
           {/* Workflow Status Transition */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold">
+            <label htmlFor="assign-status" className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold">
               Transition Maintenance Status
             </label>
             <select
+              id="assign-status"
+              aria-label="Transition maintenance status"
               value={status}
               onChange={(e) => setStatus(e.target.value as ReportStatus)}
               className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white focus:outline-none focus:border-white text-xs"
@@ -153,10 +186,11 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
 
           {/* Dispatch Notes */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold">
+            <label htmlFor="dispatch-notes" className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold">
               Official Technician & Work Order Notes
             </label>
             <textarea
+              id="dispatch-notes"
               rows={3}
               value={dispatchNotes}
               onChange={(e) => setDispatchNotes(e.target.value)}
@@ -170,6 +204,7 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
             <button
               type="button"
               onClick={onClose}
+              aria-label="Cancel crew dispatch"
               className="px-4 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-300 transition"
             >
               Cancel
@@ -177,9 +212,10 @@ export const WorkflowDispatchModal: React.FC<WorkflowDispatchModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
+              aria-label="Authorize campus crew dispatch"
               className="px-4 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-bold transition flex items-center gap-1.5 shadow-[0_4px_14px_rgba(255,255,255,0.25)]"
             >
-              <Send className="w-3.5 h-3.5 text-black" />
+              <Send className="w-3.5 h-3.5 text-black" aria-hidden="true" />
               <span>{isSubmitting ? "Dispatching..." : "Authorize Crew Dispatch"}</span>
             </button>
           </div>

@@ -7,6 +7,8 @@ import {
   calculateHaversineDistanceMeters,
 } from "@/lib/civicEngine";
 import { getGeminiClient, isGeminiConfigured } from "@/lib/gemini";
+import { applySecurityGuard, deepSanitize } from "@/lib/security";
+import { GeminiContentPart, TriageReceipt } from "@/types/campus";
 
 export const config = {
   api: {
@@ -16,18 +18,38 @@ export const config = {
   },
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+/**
+ * Stage 1 Intake & Stage 2 AI Triage Handler.
+ * Ingests student and staff facility reports, executes spatial duplicate detection,
+ * evaluates 4-factor explainable priority, invokes Gemini 2.5 Flash for multimodal triage,
+ * and saves report into operational store.
+ *
+ * @param req Next.js API Request
+ * @param res Next.js API Response
+ */
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+): Promise<void> {
+  if (
+    applySecurityGuard(req, res, {
+      allowedMethods: ["POST"],
+      maxPayloadBytes: 6 * 1024 * 1024,
+      skipRateLimit: false,
+    })
+  ) {
+    return;
   }
 
-  const parseResult = SubmitReportInputSchema.safeParse(req.body);
+  const sanitizedBody = deepSanitize(req.body);
+  const parseResult = SubmitReportInputSchema.safeParse(sanitizedBody);
   if (!parseResult.success) {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: "Invalid campus report input",
       details: parseResult.error.format(),
     });
+    return;
   }
 
   const input = parseResult.data;
@@ -106,7 +128,7 @@ Analyze this newly captured student/staff facility complaint, categorize it, det
 CAMPUS INCIDENT:
 Title: "${input.title}"
 Description: "${input.description}"
-Reported Category: "${input.category || 'NOT_SPECIFIED'}"
+Reported Category: "${input.category || "NOT_SPECIFIED"}"
 Location: "${input.address}" (${input.sub_area})
 Coordinates: Lat ${input.latitude}, Lon ${input.longitude}
 
@@ -138,7 +160,7 @@ Return a strictly valid JSON object following this exact schema:
   "duplicate_reasoning": "1-sentence spatial/semantic reasoning"
 }`;
 
-        const parts: any[] = [{ text: prompt }];
+        const parts: GeminiContentPart[] = [{ text: prompt }];
 
         if (input.image_base64) {
           const cleanBase64 = input.image_base64.replace(/^data:image\/\w+;base64,/, "");
@@ -160,7 +182,25 @@ Return a strictly valid JSON object following this exact schema:
 
         const rawText = response.text || "";
         if (rawText) {
-          const aiJson = JSON.parse(rawText);
+          interface GeminiTriageResponse {
+            category?: CivicCategory;
+            ai_summary?: string;
+            priority_score?: number;
+            priority_level?: typeof finalPriorityLevel;
+            priority_factors?: {
+              safetyRiskScore?: number;
+              cascadeImpactScore?: number;
+              duplicateVolumeScore?: number;
+              vulnerabilityScore?: number;
+            };
+            ai_explanation?: string;
+            is_likely_duplicate?: boolean;
+            matched_duplicate_id?: string | null;
+            duplicate_similarity?: number;
+            duplicate_reasoning?: string;
+          }
+
+          const aiJson: GeminiTriageResponse = JSON.parse(rawText);
           if (aiJson.category) finalCategory = aiJson.category;
           if (aiJson.ai_summary) finalSummary = aiJson.ai_summary;
           if (typeof aiJson.priority_score === "number") {
@@ -169,10 +209,22 @@ Return a strictly valid JSON object following this exact schema:
           if (aiJson.priority_level) finalPriorityLevel = aiJson.priority_level;
           if (aiJson.priority_factors) {
             finalFactors = {
-              safetyRiskScore: Math.min(40, Math.max(0, aiJson.priority_factors.safetyRiskScore || 15)),
-              cascadeImpactScore: Math.min(25, Math.max(0, aiJson.priority_factors.cascadeImpactScore || 10)),
-              duplicateVolumeScore: Math.min(20, Math.max(0, aiJson.priority_factors.duplicateVolumeScore || 5)),
-              vulnerabilityScore: Math.min(15, Math.max(0, aiJson.priority_factors.vulnerabilityScore || 5)),
+              safetyRiskScore: Math.min(
+                40,
+                Math.max(0, aiJson.priority_factors.safetyRiskScore || 15)
+              ),
+              cascadeImpactScore: Math.min(
+                25,
+                Math.max(0, aiJson.priority_factors.cascadeImpactScore || 10)
+              ),
+              duplicateVolumeScore: Math.min(
+                20,
+                Math.max(0, aiJson.priority_factors.duplicateVolumeScore || 5)
+              ),
+              vulnerabilityScore: Math.min(
+                15,
+                Math.max(0, aiJson.priority_factors.vulnerabilityScore || 5)
+              ),
             };
           }
           if (aiJson.ai_explanation) finalExplanation = aiJson.ai_explanation;
@@ -189,8 +241,8 @@ Return a strictly valid JSON object following this exact schema:
             duplicateReasoning = aiJson.duplicate_reasoning;
           }
         }
-      } catch (geminiError) {
-        console.warn("Gemini 2.5 Flash intake error, using deterministic campus engine:", geminiError);
+      } catch {
+        // Fall back gracefully to deterministic priority engine
       }
     }
 
@@ -225,27 +277,28 @@ Return a strictly valid JSON object following this exact schema:
 
     const savedReport = await saveNewReport(newReport);
 
-    return res.status(201).json({
+    const triageReceipt: TriageReceipt = {
+      reportId: savedReport.id,
+      category: savedReport.category,
+      ai_summary: savedReport.ai_summary,
+      priority_score: savedReport.priority_score,
+      priority_level: savedReport.priority_level,
+      priority_factors: savedReport.priority_factors,
+      ai_explanation: savedReport.ai_explanation,
+      is_likely_duplicate: isLikelyDuplicate,
+      matched_duplicate_id: matchedDuplicateId,
+      duplicate_similarity: duplicateSimilarity,
+      duplicate_reasoning: duplicateReasoning,
+      distance_meters: duplicateResult.distance_meters,
+    };
+
+    res.status(201).json({
       success: true,
       report: savedReport,
-      triageReceipt: {
-        reportId: savedReport.id,
-        category: savedReport.category,
-        ai_summary: savedReport.ai_summary,
-        priority_score: savedReport.priority_score,
-        priority_level: savedReport.priority_level,
-        priority_factors: savedReport.priority_factors,
-        ai_explanation: savedReport.ai_explanation,
-        is_likely_duplicate: isLikelyDuplicate,
-        matched_duplicate_id: matchedDuplicateId,
-        duplicate_similarity: duplicateSimilarity,
-        duplicate_reasoning: duplicateReasoning,
-        distance_meters: duplicateResult.distance_meters,
-      },
+      triageReceipt,
     });
   } catch (error) {
-    console.error("Failed to submit campus facility report:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       error: "Internal server error processing campus report intake",
     });

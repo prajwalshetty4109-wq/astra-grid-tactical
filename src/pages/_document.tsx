@@ -1,5 +1,6 @@
 import { Html, Head, Main, NextScript } from "next/document";
 
+/** Custom document with lang attribute, web fonts, and theme-color. */
 export default function Document() {
   return (
     <Html lang="en" className="dark">
@@ -12,7 +13,7 @@ export default function Document() {
         />
         <meta
           name="description"
-          content="CampusFix: From Complaints to Action — AI for Campus Impact: Capture, Understand, Reveal, Act. Smart-facility infrastructure operations platform powered by Gemini 2.5 Flash."
+          content="CampusFix: From Complaints to Action — AI for Civic & Campus Impact: 1. Capture (Under-60-Second Intake), 2. Understand (AI Categorization & Summary, Duplicate Report Detection, Explainable Priority Scoring), 3. Reveal (Geographic Hotspot Clustering, 60-Second Executive Action Briefs), 4. Act (Live Citizen/Student Status Tracking). Smart-facility infrastructure operations platform powered by Gemini 2.5 Flash."
         />
         <meta name="theme-color" content="#000000" />
       </Head>

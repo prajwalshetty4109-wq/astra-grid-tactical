@@ -1,17 +1,12 @@
 import React, { useState, useMemo } from "react";
-import { CivicReport, CivicCategory, PriorityLevel, ReportStatus } from "@/lib/validators";
+import { CivicReport, PriorityLevel, ReportStatus } from "@/lib/validators";
 import {
-  AlertTriangle,
   GitMerge,
-  Shield,
-  Clock,
-  CheckCircle,
   Search,
   ArrowUpDown,
   Send,
   Activity,
   Layers,
-  Wrench,
 } from "lucide-react";
 
 interface ExplainableTriageQueueProps {
@@ -22,6 +17,11 @@ interface ExplainableTriageQueueProps {
   onMergeDuplicate: (duplicateId: string, primaryId: string) => void;
 }
 
+/**
+ * Stage 2 & 4 Explainable Triage & Dispatch Queue component.
+ * Visualizes deterministic 4-factor scoring breakdown, duplicate linkages,
+ * and empowers operators to authorize maintenance crew work orders.
+ */
 export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
   reports,
   selectedReport,
@@ -94,7 +94,7 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-bold shadow-[0_2px_10px_rgba(255,255,255,0.25)]">
-            <Activity className="w-4 h-4 text-black" />
+            <Activity className="w-4 h-4 text-black" aria-hidden="true" />
           </div>
           <div>
             <h2 className="font-mono text-sm font-bold text-white tracking-wide">
@@ -117,58 +117,67 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 text-xs font-mono">
         {/* Search Input */}
         <div className="relative lg:col-span-2">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-neutral-500" />
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-neutral-500" aria-hidden="true" />
           <input
+            id="triage-search"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search Ticket ID, building, room..."
             className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-white text-xs"
-            aria-label="Search reports"
+            aria-label="Search reports by Ticket ID, building, or description"
           />
         </div>
 
         {/* Priority Filter */}
-        <select
-          value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value)}
-          className="px-2.5 py-1.5 rounded-lg bg-black border border-white/15 text-neutral-200 focus:outline-none focus:border-white text-xs"
-          aria-label="Filter by priority level"
-        >
-          <option value="ALL">All Priorities</option>
-          <option value="CRITICAL">Critical (&ge; 80)</option>
-          <option value="HIGH">High (65–79)</option>
-          <option value="MEDIUM">Medium (40–64)</option>
-          <option value="LOW">Low (&lt; 40)</option>
-        </select>
+        <div>
+          <label htmlFor="priority-filter" className="sr-only">Filter by priority level</label>
+          <select
+            id="priority-filter"
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="w-full px-2.5 py-1.5 rounded-lg bg-black border border-white/15 text-neutral-200 focus:outline-none focus:border-white text-xs"
+            aria-label="Filter by priority level"
+          >
+            <option value="ALL">All Priorities</option>
+            <option value="CRITICAL">Critical (&ge; 80)</option>
+            <option value="HIGH">High (65–79)</option>
+            <option value="MEDIUM">Medium (40–64)</option>
+            <option value="LOW">Low (&lt; 40)</option>
+          </select>
+        </div>
 
         {/* Status Filter */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-2.5 py-1.5 rounded-lg bg-black border border-white/15 text-neutral-200 focus:outline-none focus:border-white text-xs"
-          aria-label="Filter by workflow status"
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="AI_TRIAGED">AI Triaged</option>
-          <option value="ASSIGNED">Assigned</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="RESOLVED">Resolved</option>
-        </select>
+        <div>
+          <label htmlFor="status-filter" className="sr-only">Filter by workflow status</label>
+          <select
+            id="status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full px-2.5 py-1.5 rounded-lg bg-black border border-white/15 text-neutral-200 focus:outline-none focus:border-white text-xs"
+            aria-label="Filter by workflow status"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="AI_TRIAGED">AI Triaged</option>
+            <option value="ASSIGNED">Assigned</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+          </select>
+        </div>
 
         {/* Sort By Toggle */}
         <button
           onClick={() => setSortBy(sortBy === "PRIORITY" ? "DATE" : "PRIORITY")}
           className="px-2.5 py-1.5 rounded-lg bg-black border border-white/15 text-neutral-300 hover:text-white flex items-center justify-between text-xs transition"
-          aria-label="Toggle sort order"
+          aria-label={`Current sort is ${sortBy}. Click to switch sort order.`}
         >
           <span>Sort: {sortBy}</span>
-          <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400" />
+          <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400" aria-hidden="true" />
         </button>
       </div>
 
       {/* Triage Cards Feed */}
-      <div className="flex flex-col gap-3 max-h-[720px] overflow-y-auto pr-1">
+      <div className="flex flex-col gap-3 max-h-[720px] overflow-y-auto pr-1" role="feed" aria-label="Campus Facility Triage Queue">
         {filteredReports.map((report) => {
           const isSelected = selectedReport?.id === report.id;
           const factors = report.priority_factors || {
@@ -179,9 +188,16 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
           };
 
           return (
-            <div
+            <article
               key={report.id}
               onClick={() => onSelectReport(report)}
+              aria-label={`Incident #${report.id}: ${report.title}, priority score ${report.priority_score}`}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  onSelectReport(report);
+                }
+              }}
               className={`rounded-xl border p-4 transition-all cursor-pointer ${
                 isSelected
                   ? "bg-neutral-900 border-white shadow-3d-card-hover -translate-y-0.5"
@@ -244,7 +260,14 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
                       <span>Safety (40)</span>
                       <span className="text-white font-bold">{factors.safetyRiskScore}</span>
                     </div>
-                    <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10">
+                    <div
+                      className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10"
+                      role="progressbar"
+                      aria-valuenow={factors.safetyRiskScore}
+                      aria-valuemin={0}
+                      aria-valuemax={40}
+                      aria-label="Safety & Hazard Risk Score"
+                    >
                       <div
                         className="bg-white h-full rounded-full"
                         style={{ width: `${(factors.safetyRiskScore / 40) * 100}%` }}
@@ -258,7 +281,14 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
                       <span>Cascade (25)</span>
                       <span className="text-white font-bold">{factors.cascadeImpactScore}</span>
                     </div>
-                    <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10">
+                    <div
+                      className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10"
+                      role="progressbar"
+                      aria-valuenow={factors.cascadeImpactScore}
+                      aria-valuemin={0}
+                      aria-valuemax={25}
+                      aria-label="Academic Cascade Impact Score"
+                    >
                       <div
                         className="bg-neutral-300 h-full rounded-full"
                         style={{ width: `${(factors.cascadeImpactScore / 25) * 100}%` }}
@@ -272,7 +302,14 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
                       <span>Volume (20)</span>
                       <span className="text-white font-bold">{factors.duplicateVolumeScore}</span>
                     </div>
-                    <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10">
+                    <div
+                      className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10"
+                      role="progressbar"
+                      aria-valuenow={factors.duplicateVolumeScore}
+                      aria-valuemin={0}
+                      aria-valuemax={20}
+                      aria-label="Duplicate Volume Score"
+                    >
                       <div
                         className="bg-neutral-400 h-full rounded-full"
                         style={{ width: `${(factors.duplicateVolumeScore / 20) * 100}%` }}
@@ -286,7 +323,14 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
                       <span>Zone Sens. (15)</span>
                       <span className="text-white font-bold">{factors.vulnerabilityScore}</span>
                     </div>
-                    <div className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10">
+                    <div
+                      className="w-full bg-black h-1.5 rounded-full overflow-hidden border border-white/10"
+                      role="progressbar"
+                      aria-valuenow={factors.vulnerabilityScore}
+                      aria-valuemin={0}
+                      aria-valuemax={15}
+                      aria-label="Zone Sensitivity Score"
+                    >
                       <div
                         className="bg-neutral-500 h-full rounded-full"
                         style={{ width: `${(factors.vulnerabilityScore / 15) * 100}%` }}
@@ -306,7 +350,7 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
               {report.duplicate_of_id ? (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-neutral-900 border border-white/20 text-xs font-mono text-white mb-3">
                   <div className="flex items-center gap-1.5">
-                    <GitMerge className="w-3.5 h-3.5 text-white" />
+                    <GitMerge className="w-3.5 h-3.5 text-white" aria-hidden="true" />
                     <span>
                       Corroborating duplicate of Ticket <strong>#{report.duplicate_of_id}</strong>
                     </span>
@@ -318,7 +362,7 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
               ) : (
                 report.duplicate_count && report.duplicate_count > 1 ? (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-900 border border-white/15 text-xs font-mono text-white mb-3">
-                    <Layers className="w-3.5 h-3.5 text-white" />
+                    <Layers className="w-3.5 h-3.5 text-white" aria-hidden="true" />
                     <span>
                       Primary Campus Incident: Corroborated by <strong>{report.duplicate_count}</strong> student reports
                     </span>
@@ -339,9 +383,10 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
                         e.stopPropagation();
                         onMergeDuplicate(report.id, report.duplicate_of_id!);
                       }}
+                      aria-label={`Merge duplicate report #${report.id} into #${report.duplicate_of_id}`}
                       className="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 border border-white/20 text-white text-[11px] transition flex items-center gap-1"
                     >
-                      <GitMerge className="w-3 h-3" />
+                      <GitMerge className="w-3 h-3" aria-hidden="true" />
                       <span>Merge Duplicate</span>
                     </button>
                   )}
@@ -351,14 +396,15 @@ export const ExplainableTriageQueue: React.FC<ExplainableTriageQueueProps> = ({
                       e.stopPropagation();
                       onOpenDispatchModal(report);
                     }}
+                    aria-label={`Assign and dispatch crew for Ticket #${report.id}`}
                     className="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition flex items-center gap-1.5 shadow-[0_2px_8px_rgba(255,255,255,0.2)]"
                   >
-                    <Send className="w-3 h-3 text-black" />
+                    <Send className="w-3 h-3 text-black" aria-hidden="true" />
                     <span>Assign & Dispatch</span>
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           );
         })}
 

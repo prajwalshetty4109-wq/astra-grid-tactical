@@ -2,19 +2,38 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { ActionBriefInputSchema, ActionBriefResult, CivicReport } from "@/lib/validators";
 import { fetchAllReports } from "@/lib/reportStore";
 import { getGeminiClient, isGeminiConfigured } from "@/lib/gemini";
+import { applySecurityGuard, deepSanitize } from "@/lib/security";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+/**
+ * 60-second executive maintenance action brief generation handler.
+ * Synthesizes multi-issue building clusters into coordinated multi-crew dispatch orders
+ * using Gemini 2.5 Flash with high-fidelity deterministic fallback.
+ *
+ * @param req Next.js API Request
+ * @param res Next.js API Response
+ */
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+): Promise<void> {
+  if (
+    applySecurityGuard(req, res, {
+      allowedMethods: ["POST"],
+      skipRateLimit: false,
+    })
+  ) {
+    return;
   }
 
-  const parseResult = ActionBriefInputSchema.safeParse(req.body);
+  const sanitizedBody = deepSanitize(req.body);
+  const parseResult = ActionBriefInputSchema.safeParse(sanitizedBody);
   if (!parseResult.success) {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: "Invalid action brief request parameters",
       details: parseResult.error.format(),
     });
+    return;
   }
 
   const { clusterId, clusterTitle, reportIds } = parseResult.data;
@@ -24,10 +43,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const clusterReports = allReports.filter((r) => reportIds.includes(r.id));
 
     if (clusterReports.length === 0) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: "No matching reports found for selected building cluster",
       });
+      return;
     }
 
     const title = clusterTitle || `${clusterReports[0].sub_area} Facility Cluster`;
@@ -38,7 +58,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const hasElectrical = categories.includes("ELECTRICAL");
       const hasPlumbing = categories.includes("PLUMBING");
       const hasIT = categories.includes("IT_INFRA");
-      const hasHVAC = categories.includes("HVAC");
       const hasSanitation = categories.includes("SANITATION");
 
       let leadDept = "FACILITY_GENERAL";
@@ -150,7 +169,16 @@ Produce a JSON response strictly following this schema:
 
         const rawText = response.text || "";
         if (rawText) {
-          const aiJson = JSON.parse(rawText);
+          interface GeminiActionBriefResponse {
+            cluster_title?: string;
+            root_cause_diagnosis?: string;
+            recommended_sequence?: string[];
+            lead_department?: string;
+            estimated_citizens_impacted?: string;
+            confidence_note?: string;
+          }
+
+          const aiJson: GeminiActionBriefResponse = JSON.parse(rawText);
           if (
             aiJson.cluster_title &&
             aiJson.root_cause_diagnosis &&
@@ -168,20 +196,19 @@ Produce a JSON response strictly following this schema:
             };
           }
         }
-      } catch (geminiError) {
-        console.warn("Gemini action brief error, using deterministic campus brief:", geminiError);
+      } catch {
+        // Fall back gracefully to deterministic brief
       }
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       clusterId,
       brief: briefResult,
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Action brief generation error:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       error: "Failed to generate cluster action brief",
     });

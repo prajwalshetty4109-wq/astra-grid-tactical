@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { CivicCategory, PriorityLevel } from "@/lib/validators";
+import { CivicCategory } from "@/lib/validators";
+import { TriageReceipt } from "@/types/campus";
 import {
   Camera,
-  MapPin,
   Upload,
   Sparkles,
-  AlertTriangle,
   CheckCircle2,
   GitMerge,
   ArrowRight,
-  Building2,
-  Cpu,
 } from "lucide-react";
 
 interface CitizenCaptureFormProps {
   initialDemo?: boolean;
 }
 
+/**
+ * Mobile-ready, accessible student & staff campus facility complaint intake form.
+ * Supports rapid preset entry, photo upload, and instant Gemini 2.5 Flash triage receipt rendering.
+ */
 export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialDemo = false }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -29,7 +30,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionReceipt, setSubmissionReceipt] = useState<any | null>(null);
+  const [submissionReceipt, setSubmissionReceipt] = useState<TriageReceipt | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const presets = [
@@ -162,13 +163,13 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
       const data = await res.json();
       if (data.success && data.triageReceipt) {
-        setSubmissionReceipt(data.triageReceipt);
+        setSubmissionReceipt(data.triageReceipt as TriageReceipt);
       } else {
         setErrorMsg(data.error || "Failed to process campus report intake");
       }
-    } catch (err: any) {
-      console.error("Submission failed:", err);
-      setErrorMsg(err.message || "Network error submitting campus report");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Network error submitting campus report";
+      setErrorMsg(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -179,7 +180,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
       {/* 1-Tap Judge Demo Scenario Button */}
       <div className="p-4 rounded-xl border border-white/20 bg-neutral-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-3d-card">
         <div className="flex items-center gap-2.5">
-          <Sparkles className="w-4 h-4 text-white animate-spin" />
+          <Sparkles className="w-4 h-4 text-white animate-spin" aria-hidden="true" />
           <div>
             <div className="font-mono text-xs font-bold text-white">
               JUDGE 15-SECOND SPEED DEMO
@@ -192,6 +193,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
         <button
           type="button"
           onClick={handleAutoFillDemo}
+          aria-label="Auto-fill urgent demo scenario"
           className="px-4 py-2 rounded-lg bg-white text-black hover:bg-neutral-200 font-mono text-xs font-bold tracking-wider transition shadow-[0_2px_10px_rgba(255,255,255,0.2)]"
         >
           Auto-Fill Urgent Scenario
@@ -202,7 +204,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
       <div className="rounded-2xl border border-white/15 bg-neutral-950 p-6 sm:p-8 shadow-3d-card reticle-corner-white">
         <div className="border-b border-white/10 pb-4 mb-5">
           <div className="flex items-center gap-2 text-white font-mono text-xs font-bold tracking-wider uppercase mb-1">
-            <Camera className="w-3.5 h-3.5" />
+            <Camera className="w-3.5 h-3.5" aria-hidden="true" />
             Stage 1 • Rapid Campus Incident Intake (&lt;60 Seconds)
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -214,7 +216,11 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono">
+          <div
+            role="alert"
+            aria-live="polite"
+            className="mb-4 p-3 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono"
+          >
             {errorMsg}
           </div>
         )}
@@ -223,12 +229,14 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs font-mono">
           {/* Issue Title */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+            <label htmlFor="issue-title" className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
               Issue Headline / Summary *
             </label>
             <input
+              id="issue-title"
               type="text"
               required
+              aria-required="true"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Chilled water pipe leaking over lab equipment"
@@ -238,11 +246,13 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
           {/* Description */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+            <label htmlFor="issue-description" className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
               Detailed Description *
             </label>
             <textarea
+              id="issue-description"
               required
+              aria-required="true"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -253,10 +263,12 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
           {/* Facility Category Selector */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+            <label htmlFor="issue-category" className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
               Facility Category
             </label>
             <select
+              id="issue-category"
+              aria-label="Select facility category"
               value={category}
               onChange={(e) => setCategory(e.target.value as CivicCategory)}
               className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white focus:outline-none focus:border-white text-xs"
@@ -272,15 +284,16 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
           {/* Location Quick Presets */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold flex items-center justify-between">
+            <span className="block text-neutral-300 uppercase tracking-wider mb-1.5 font-semibold flex items-center justify-between">
               <span>Campus Building Quick-Presets</span>
               <span className="text-neutral-500 font-normal">Click to set location</span>
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2" role="group" aria-label="Campus Building Quick Presets">
               {presets.map((p) => (
                 <button
                   key={p.name}
                   type="button"
+                  aria-label={`Select location ${p.name}`}
                   onClick={() => handleApplyPreset(p)}
                   className={`p-2.5 rounded-lg border text-left text-[11px] transition ${
                     subArea === p.subArea
@@ -298,12 +311,14 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
           {/* Building & Room Address */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2">
-              <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+              <label htmlFor="issue-address" className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
                 Room / Floor Address *
               </label>
               <input
+                id="issue-address"
                 type="text"
                 required
+                aria-required="true"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="e.g. Room 304, 3rd Floor Lab Corridor"
@@ -311,12 +326,14 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
               />
             </div>
             <div>
-              <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
-                Campus Building Wing
+              <label htmlFor="issue-subarea" className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+                Campus Building Wing *
               </label>
               <input
+                id="issue-subarea"
                 type="text"
                 required
+                aria-required="true"
                 value={subArea}
                 onChange={(e) => setSubArea(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-black border border-white/15 text-white focus:outline-none focus:border-white font-sans text-xs"
@@ -327,22 +344,30 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
           {/* Coordinate Telemetry */}
           <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-black border border-white/10">
             <div>
-              <label className="block text-neutral-400 text-[10px] uppercase mb-0.5">Latitude</label>
+              <label htmlFor="coord-latitude" className="block text-neutral-400 text-[10px] uppercase mb-0.5">
+                Latitude
+              </label>
               <input
+                id="coord-latitude"
                 type="number"
-                step="any"
+                step={0.000001}
                 required
+                aria-required="true"
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
                 className="w-full px-2 py-1 rounded bg-neutral-900 border border-white/15 text-white text-xs"
               />
             </div>
             <div>
-              <label className="block text-neutral-400 text-[10px] uppercase mb-0.5">Longitude</label>
+              <label htmlFor="coord-longitude" className="block text-neutral-400 text-[10px] uppercase mb-0.5">
+                Longitude
+              </label>
               <input
+                id="coord-longitude"
                 type="number"
-                step="any"
+                step={0.000001}
                 required
+                aria-required="true"
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
                 className="w-full px-2 py-1 rounded bg-neutral-900 border border-white/15 text-white text-xs"
@@ -352,21 +377,22 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
           {/* Photo Attachment */}
           <div>
-            <label className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
+            <label htmlFor="photo-upload" className="block text-neutral-300 uppercase tracking-wider mb-1 font-semibold">
               Hazard Photo (Optional for Gemini Multimodal Analysis)
             </label>
             <div className="flex flex-col sm:flex-row gap-3 items-start">
-              <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-white/15 text-white text-xs transition">
-                <Upload className="w-3.5 h-3.5" />
+              <label htmlFor="photo-upload" className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-white/15 text-white text-xs transition">
+                <Upload className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Upload From Device</span>
-                <input type="file" accept="image/*" onChange={handleImageFile} className="hidden" />
+                <input id="photo-upload" type="file" accept="image/*" onChange={handleImageFile} className="hidden" aria-label="Upload hazard photo" />
               </label>
 
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Hazard Photo Presets">
                 {hazardPhotoPresets.map((hp) => (
                   <button
                     key={hp.label}
                     type="button"
+                    aria-label={`Select hazard photo preset: ${hp.label}`}
                     onClick={() => {
                       setImagePreview(hp.url);
                       setImageBase64(null);
@@ -386,9 +412,10 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
             {imagePreview && (
               <div className="mt-2.5 relative w-32 h-20 rounded-lg overflow-hidden border border-white/20 shadow-md">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imagePreview} alt="Field preview" className="w-full h-full object-cover" />
+                <img src={imagePreview} alt="Field hazard preview" className="w-full h-full object-cover" />
                 <button
                   type="button"
+                  aria-label="Remove uploaded photo"
                   onClick={() => {
                     setImagePreview(null);
                     setImageBase64(null);
@@ -406,9 +433,10 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
             <button
               type="submit"
               disabled={isSubmitting}
+              aria-label="Submit report to AI triage engine"
               className="w-full py-3.5 rounded-xl bg-white text-black font-extrabold text-sm tracking-wider hover:bg-neutral-200 transition flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(255,255,255,0.3)]"
             >
-              <Sparkles className={`w-4 h-4 ${isSubmitting ? "animate-spin" : ""}`} />
+              <Sparkles className={`w-4 h-4 ${isSubmitting ? "animate-spin" : ""}`} aria-hidden="true" />
               <span>{isSubmitting ? "Triaging with Gemini 2.5 Flash..." : "Submit to Triage Engine"}</span>
             </button>
           </div>
@@ -417,11 +445,14 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
       {/* Live AI Triage Receipt */}
       {submissionReceipt && (
-        <div className="rounded-2xl border border-white/30 bg-neutral-950 p-6 sm:p-7 shadow-3d-card flex flex-col gap-4">
+        <section
+          aria-labelledby="triage-receipt-title"
+          className="rounded-2xl border border-white/30 bg-neutral-950 p-6 sm:p-7 shadow-3d-card flex flex-col gap-4"
+        >
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-white" />
-              <h2 className="font-mono text-base font-bold text-white tracking-wide">
+              <CheckCircle2 className="w-5 h-5 text-white" aria-hidden="true" />
+              <h2 id="triage-receipt-title" className="font-mono text-base font-bold text-white tracking-wide">
                 AI TRIAGE RECEIPT GENERATED
               </h2>
             </div>
@@ -457,7 +488,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
 
           {submissionReceipt.is_likely_duplicate && (
             <div className="p-3 rounded-lg bg-neutral-900 border border-white/25 text-xs font-mono text-white flex items-start gap-2">
-              <GitMerge className="w-4 h-4 mt-0.5 shrink-0 text-white" />
+              <GitMerge className="w-4 h-4 mt-0.5 shrink-0 text-white" aria-hidden="true" />
               <div>
                 <strong>Corroborating Student Report Detected:</strong>
                 <p className="text-neutral-400 text-[11px] mt-0.5 font-sans">
@@ -511,7 +542,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-white text-black font-bold hover:bg-neutral-200 transition shadow-sm"
             >
               <span>Follow Progress in Student Tracker</span>
-              <ArrowRight className="w-3.5 h-3.5 text-black" />
+              <ArrowRight className="w-3.5 h-3.5 text-black" aria-hidden="true" />
             </Link>
 
             <Link
@@ -521,7 +552,7 @@ export const CitizenCaptureForm: React.FC<CitizenCaptureFormProps> = ({ initialD
               View in Campus Deck
             </Link>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

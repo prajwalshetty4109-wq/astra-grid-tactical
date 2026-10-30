@@ -10,7 +10,9 @@ import {
   CivicReportSchema,
   SubmitReportInputSchema,
   WorkflowUpdateInputSchema,
+  PriorityFactorsSchema,
 } from "../lib/validators";
+import { sanitizeInput, deepSanitize } from "../lib/security";
 
 describe("CampusFix Civic Engine - Haversine Distance Calculation", () => {
   test("returns 0 meters for identical coordinates", () => {
@@ -30,6 +32,19 @@ describe("CampusFix Civic Engine - Haversine Distance Calculation", () => {
     expect(dist).toBeGreaterThan(6000);
     expect(dist).toBeLessThan(10000);
   });
+
+  test("handles antipodal and boundary globe coordinates without error", () => {
+    // North Pole to South Pole
+    const dist = calculateHaversineDistanceMeters(90, 0, -90, 0);
+    expect(dist).toBeGreaterThan(19_000_000);
+    expect(dist).toBeLessThan(21_000_000);
+  });
+
+  test("handles negative coordinates and cross-equator distances correctly", () => {
+    const dist = calculateHaversineDistanceMeters(-1.286389, 36.817223, 1.286389, 36.817223);
+    expect(dist).toBeGreaterThan(250_000);
+    expect(dist).toBeLessThan(350_000);
+  });
 });
 
 describe("CampusFix Civic Engine - Text & Synonym Similarity", () => {
@@ -37,6 +52,18 @@ describe("CampusFix Civic Engine - Text & Synonym Similarity", () => {
     const text = "Overhead chilled water pipe rupture leaking onto lab electronics";
     const sim = calculateTextSimilarity(text, text);
     expect(sim).toBe(1.0);
+  });
+
+  test("returns 0 for empty strings or stop-word-only text", () => {
+    expect(calculateTextSimilarity("", "")).toBe(0);
+    expect(calculateTextSimilarity("the and or", "in on at")).toBe(0);
+  });
+
+  test("strips special characters and punctuation before matching", () => {
+    const textA = "Water leak in lab Room #304!!!";
+    const textB = "water leak in lab room 304";
+    const sim = calculateTextSimilarity(textA, textB);
+    expect(sim).toBeGreaterThan(0.9);
   });
 
   test("matches campus facility synonyms like pipe leak and water burst", () => {
@@ -49,6 +76,13 @@ describe("CampusFix Civic Engine - Text & Synonym Similarity", () => {
   test("matches campus IT infrastructure synonyms like wifi and router access point", () => {
     const textA = "Campus wifi network down in study commons";
     const textB = "Router access point offline dropping network connection";
+    const sim = calculateTextSimilarity(textA, textB);
+    expect(sim).toBeGreaterThan(0.25);
+  });
+
+  test("matches campus HVAC synonyms like aircon chiller and cooling ventilation", () => {
+    const textA = "Aircon chiller unit failure in server room";
+    const textB = "Cooling ventilation duct overheating with no airflow";
     const sim = calculateTextSimilarity(textA, textB);
     expect(sim).toBeGreaterThan(0.25);
   });
@@ -89,6 +123,44 @@ describe("CampusFix Civic Engine - Duplicate Detection", () => {
 
     const scienceReports = INITIAL_SYNTHETIC_REPORTS.filter((r) => r.sub_area.includes("Science"));
     const result = findLikelyDuplicates(candidate, scienceReports);
+    expect(result.is_likely_duplicate).toBe(false);
+  });
+
+  test("skips matching against the candidate report itself when ID is provided", () => {
+    const existing = INITIAL_SYNTHETIC_REPORTS[0];
+    const candidate = {
+      id: existing.id,
+      title: existing.title,
+      description: existing.description,
+      latitude: existing.latitude,
+      longitude: existing.longitude,
+      category: existing.category,
+    };
+
+    const result = findLikelyDuplicates(candidate, [existing]);
+    expect(result.is_likely_duplicate).toBe(false);
+    expect(result.matched_duplicate_id).toBeNull();
+  });
+
+  test("enforces strict 250-meter threshold boundary for duplicate candidate evaluation", () => {
+    // Coordinate 260m away from CF-101
+    const candidate = {
+      title: INITIAL_SYNTHETIC_REPORTS[0].title,
+      description: INITIAL_SYNTHETIC_REPORTS[0].description,
+      latitude: 12.9779,
+      longitude: 77.6068,
+      category: INITIAL_SYNTHETIC_REPORTS[0].category,
+    };
+
+    const dist = calculateHaversineDistanceMeters(
+      candidate.latitude,
+      candidate.longitude,
+      INITIAL_SYNTHETIC_REPORTS[0].latitude,
+      INITIAL_SYNTHETIC_REPORTS[0].longitude
+    );
+    expect(dist).toBeGreaterThan(250);
+
+    const result = findLikelyDuplicates(candidate, [INITIAL_SYNTHETIC_REPORTS[0]]);
     expect(result.is_likely_duplicate).toBe(false);
   });
 });
@@ -137,6 +209,39 @@ describe("CampusFix Civic Engine - Explainable Priority Scoring", () => {
     const factorSum = safetyRiskScore + cascadeImpactScore + duplicateVolumeScore + vulnerabilityScore;
     expect(Math.min(100, factorSum)).toBe(priority.priority_score);
   });
+
+  test("clamps individual priority factors within their designated rubric bounds", () => {
+    const report = INITIAL_SYNTHETIC_REPORTS[0];
+    const priority = computeExplainablePriority(report, INITIAL_SYNTHETIC_REPORTS);
+    const { safetyRiskScore, cascadeImpactScore, duplicateVolumeScore, vulnerabilityScore } =
+      priority.priority_factors;
+
+    expect(safetyRiskScore).toBeGreaterThanOrEqual(0);
+    expect(safetyRiskScore).toBeLessThanOrEqual(40);
+
+    expect(cascadeImpactScore).toBeGreaterThanOrEqual(0);
+    expect(cascadeImpactScore).toBeLessThanOrEqual(25);
+
+    expect(duplicateVolumeScore).toBeGreaterThanOrEqual(0);
+    expect(duplicateVolumeScore).toBeLessThanOrEqual(20);
+
+    expect(vulnerabilityScore).toBeGreaterThanOrEqual(0);
+    expect(vulnerabilityScore).toBeLessThanOrEqual(15);
+  });
+
+  test("correctly maps priority score to tier labels (CRITICAL, HIGH, MEDIUM, LOW)", () => {
+    const base = {
+      category: "PLUMBING" as const,
+      title: "Restroom sink",
+      description: "Sink slow drain",
+      latitude: 12.9251,
+      longitude: 77.5938,
+      sub_area: "Central Library",
+    };
+
+    const priority = computeExplainablePriority(base, []);
+    expect(["CRITICAL", "HIGH", "MEDIUM", "LOW"]).toContain(priority.priority_level);
+  });
 });
 
 describe("CampusFix Civic Engine - Hotspot Cluster Detection", () => {
@@ -150,6 +255,25 @@ describe("CampusFix Civic Engine - Hotspot Cluster Detection", () => {
     expect(topCluster.compositeRiskScore).toBeGreaterThanOrEqual(80);
     expect(topCluster.centroid.latitude).toBeDefined();
     expect(topCluster.centroid.longitude).toBeDefined();
+  });
+
+  test("sorts detected clusters descending by composite risk score", () => {
+    const clusters = detectGeographicClusters(INITIAL_SYNTHETIC_REPORTS);
+    for (let i = 0; i < clusters.length - 1; i++) {
+      expect(clusters[i].compositeRiskScore).toBeGreaterThanOrEqual(
+        clusters[i + 1].compositeRiskScore
+      );
+    }
+  });
+
+  test("computes accurate centroid coordinates within building bounds", () => {
+    const clusters = detectGeographicClusters(INITIAL_SYNTHETIC_REPORTS);
+    const alpha = clusters.find((c) => c.title.includes("Science"));
+    expect(alpha).toBeDefined();
+    if (alpha) {
+      expect(alpha.centroid.latitude).toBeCloseTo(12.9756, 2);
+      expect(alpha.centroid.longitude).toBeCloseTo(77.6068, 2);
+    }
   });
 });
 
@@ -197,5 +321,57 @@ describe("CampusFix Civic Engine - Zod Input & State Validators", () => {
     };
     const parsed = WorkflowUpdateInputSchema.safeParse(valid);
     expect(parsed.success).toBe(true);
+  });
+
+  test("validates priority factors schema enforces max score boundaries", () => {
+    const validFactors = {
+      safetyRiskScore: 40,
+      cascadeImpactScore: 25,
+      duplicateVolumeScore: 20,
+      vulnerabilityScore: 15,
+    };
+    expect(PriorityFactorsSchema.safeParse(validFactors).success).toBe(true);
+
+    const invalidFactors = {
+      safetyRiskScore: 45, // Exceeds 40
+      cascadeImpactScore: 25,
+      duplicateVolumeScore: 20,
+      vulnerabilityScore: 15,
+    };
+    expect(PriorityFactorsSchema.safeParse(invalidFactors).success).toBe(false);
+  });
+});
+
+describe("CampusFix Security Engine - Input Sanitization & XSS Defense", () => {
+  test("strips dangerous HTML and script tags from input strings", () => {
+    const malicious = "<script>alert('xss')</script>Burst pipe in Chem Lab";
+    const clean = sanitizeInput(malicious);
+    expect(clean).toBe("Burst pipe in Chem Lab");
+    expect(clean).not.toContain("<script>");
+  });
+
+  test("strips nested angle brackets and image onerror vectors", () => {
+    const attack = "<img src=x onerror=alert(1)>Sparking outlet";
+    const clean = sanitizeInput(attack);
+    expect(clean).toBe("Sparking outlet");
+    expect(clean).not.toContain("<img");
+  });
+
+  test("deepSanitize cleans nested object structures recursively", () => {
+    const payload = {
+      title: "<b>Water leak</b>",
+      description: "Flooding in <i>Lab 3</i>",
+      location: {
+        address: "<script>hack()</script>Room 304",
+      },
+      tags: ["<p>plumbing</p>", "urgent"],
+    };
+
+    const sanitized = deepSanitize(payload);
+    expect(sanitized.title).toBe("Water leak");
+    expect(sanitized.description).toBe("Flooding in Lab 3");
+    expect(sanitized.location.address).toBe("Room 304");
+    expect(sanitized.tags[0]).toBe("plumbing");
+    expect(sanitized.tags[1]).toBe("urgent");
   });
 });

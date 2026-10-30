@@ -2,7 +2,7 @@
   "name": "campusfix",
   "version": "2.0.0",
   "private": true,
-  "description": "CampusFix: Enterprise AI-Powered University & Smart-Facility Infrastructure Operations Platform. From Complaints to Action — AI for Campus Impact: Capture, Understand, Reveal, Act.",
+  "description": "CampusFix: From Complaints to Action — AI for Civic & Campus Impact: 1. Capture (Under-60-Second Intake), 2. Understand (AI Categorization & Summary, Duplicate Report Detection, Explainable Priority Scoring), 3. Reveal (Geographic Hotspot Clustering, 60-Second Executive Action Briefs), 4. Act (Live Citizen/Student Status Tracking). Smart-facility infrastructure operations platform powered by Gemini 2.5 Flash.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -27,6 +27,8 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.15",
     "jest": "^29.7.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",

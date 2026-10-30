@@ -1,12 +1,12 @@
 # CampusFix — AI-Powered University & Smart-Facility Infrastructure Operations Platform
 
 > **PromptWars x ASTRA Hackathon Submission**
-> Theme: *"From Complaints to Action — AI for Campus Impact: Capture, Understand, Reveal, Act"*
+> Theme: *"From Complaints to Action — AI for Civic & Campus Impact: 1. Capture, 2. Understand, 3. Reveal, 4. Act — featuring Under-60-Second Intake, AI Categorization & Summary, Duplicate Report Detection, Explainable Priority Scoring, Geographic Hotspot Clustering, 60-Second Executive Action Briefs, and Live Citizen/Student Status Tracking"*
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black?logo=next.js)](https://nextjs.org)
 [![Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?logo=google)](https://ai.google.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript)](https://typescriptlang.org)
-[![Tests](https://img.shields.io/badge/Tests-17_Passing-22c55e)](./src/__tests__/civicEngine.test.ts)
+[![Tests](https://img.shields.io/badge/Tests-32_Passing-22c55e)](./src/__tests__/civicEngine.test.ts)
 
 ---
 
@@ -14,20 +14,24 @@
 
 CampusFix is an enterprise-grade, AI-powered facility management platform that transforms scattered campus complaints from students and staff into **prioritized, explainable, and trackable maintenance actions** — from first report to resolved ticket — in under 60 seconds per submission.
 
-Built with **Google Gemini 2.5 Flash** multimodal AI, **Haversine spatial clustering**, and **explainable priority scoring**, CampusFix demonstrates the full 4-stage lifecycle mandated by the hackathon problem statement.
+Built with **Google Gemini 2.5 Flash** multimodal AI, **Haversine spatial clustering**, and **explainable priority scoring**, CampusFix demonstrates the full 4-stage lifecycle mandated by the hackathon problem statement:
+- **1. Capture:** Under-60-Second Mobile-Ready Intake Form with fast presets and field hazard image analysis
+- **2. Understand:** AI Categorization & Executive Summary, Duplicate Report Detection (<250m Haversine + Token Similarity), and Explainable Priority Scoring (0-100)
+- **3. Reveal:** Geographic Hotspot Clustering, 3D Campus Blueprint Map, and 60-Second Executive Action Briefs
+- **4. Act:** Multi-Crew Work Order Dispatch, 1-Click Duplicate Merging, and Live Citizen/Student Status Tracking
 
 ---
 
 ## The 4 Lifecycle Stages
 
-### Stage 1 — Capture
+### Stage 1 — Capture (Under-60-Second Intake)
 Mobile-ready student intake form (`375px` to desktop). Students submit:
 - A plain-English description of the facility issue
-- An optional photo (upload or 1-click campus hazard preset)
+- An optional photo (upload or 1-click campus hazard preset for Gemini Vision analysis)
 - A category (`IT_INFRA`, `PLUMBING`, `ELECTRICAL`, `HVAC`, `SANITATION`, `FURNITURE`)
-- A location via 6 campus building presets or a direct map click
+- A location via 6 campus building presets or direct coordinate map input
 
-### Stage 2 — Understand
+### Stage 2 — Understand (AI Categorization, Duplicate Detection, Priority Math)
 Hybrid AI + Spatial triage pipeline:
 - **Gemini 2.5 Flash** (`gemini-2.5-flash` via `@google/genai`) categorizes the report, generates a 1-sentence summary, and explains the priority score in plain English
 - **Haversine Distance** (<250m threshold) + **Dice + Containment Token Similarity** detects likely duplicates across 6 campus synonym groups
@@ -37,19 +41,19 @@ Hybrid AI + Spatial triage pipeline:
   - Duplicate Volume / Student Corroboration (0–20)
   - High-Occupancy Zone Sensitivity (0–15)
 
-### Stage 3 — Reveal
+### Stage 3 — Reveal (Geographic Hotspot Clustering & 60-Second Action Briefs)
 Interactive campus map with:
 - SVG isometric 3D campus blueprint with 6 building blocks
-- Hotspot cluster detection (Haversine-based, 100m radius, 3+ reports)
+- Hotspot cluster detection (Haversine-based, 250m corridor radius, 3+ corroborating reports)
 - Real-time KPI ribbon: Total Reports / Active Clusters / CRITICAL Issues / Resolved
-- Cluster Action Brief generation via Gemini AI (60-second maintenance summaries)
+- Cluster Action Brief generation via Gemini 2.5 Flash AI (60-second maintenance summaries with ordered crew sequences)
 
-### Stage 4 — Act
+### Stage 4 — Act (Crew Dispatch, Duplicate Merging & Live Status Tracking)
 Full dispatch workflow:
 - Assign reports to 6 maintenance crew types (PLUMBING_OPS, ELECTRICAL_ENG, IT_HELPDESK, HVAC_TECH, SANITATION_CREW, FACILITY_GENERAL)
 - 1-click duplicate merge with automatic priority boost
-- Student-facing resolution tracker with live status timeline
-- Supabase PostgreSQL persistence with in-memory fallback
+- Student-facing resolution tracker with live status timeline (SUBMITTED → AI_TRIAGED → ASSIGNED → IN_PROGRESS → RESOLVED)
+- Supabase PostgreSQL persistence with resilient in-memory fallback
 
 ---
 

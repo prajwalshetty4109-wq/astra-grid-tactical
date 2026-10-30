@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import { TacticalNavbar } from "@/components/TacticalNavbar";
 import { CivicReport } from "@/lib/validators";
 import { INITIAL_SYNTHETIC_REPORTS } from "@/lib/syntheticReports";
@@ -9,14 +8,14 @@ import {
   Search,
   CheckCircle2,
   Clock,
-  Wrench,
-  Layers,
-  Sparkles,
   GitMerge,
-  ArrowRight,
-  Building2,
 } from "lucide-react";
 
+/**
+ * Stage 4 (Act) Student Resolution Tracker page.
+ * Provides transparent status progression from SUBMITTED to RESOLVED,
+ * displaying explainable AI priority factors, linked corroborating student reports, and technician notes.
+ */
 export default function TrackPage() {
   const router = useRouter();
   const [reportIdInput, setReportIdInput] = useState("CF-104");
@@ -32,7 +31,9 @@ export default function TrackPage() {
           setReports(data.reports);
         }
       })
-      .catch((err) => console.warn("Track state fallback:", err));
+      .catch(() => {
+        // Fall back gracefully to initial synthetic reports
+      });
   }, []);
 
   useEffect(() => {
@@ -84,15 +85,19 @@ export default function TrackPage() {
     <>
       <Head>
         <title>Live Student Resolution Tracker | CampusFix</title>
+        <meta
+          name="description"
+          content="Live Student Work Order Resolution Tracker: Track campus maintenance complaints from submission through Gemini 2.5 Flash triage to field sign-off."
+        />
       </Head>
 
       <TacticalNavbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+      <main id="main-content" role="main" tabIndex={-1} className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
         {/* Title Header */}
         <div className="border-b border-white/10 pb-4">
           <div className="flex items-center gap-2 text-white font-mono text-xs uppercase tracking-wider mb-1 font-semibold">
-            <Clock className="w-4 h-4" />
+            <Clock className="w-4 h-4" aria-hidden="true" />
             Stage 4 • Student Transparency & Real-Time Resolution Timeline
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -104,21 +109,24 @@ export default function TrackPage() {
         </div>
 
         {/* Ticket Lookup Bar */}
-        <div className="rounded-2xl border border-white/15 bg-neutral-950 p-5 shadow-3d-card">
+        <section aria-label="Ticket Search" className="rounded-2xl border border-white/15 bg-neutral-950 p-5 shadow-3d-card">
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2.5">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3.5 top-3 text-neutral-500" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-neutral-500" aria-hidden="true" />
+              <label htmlFor="ticket-search-input" className="sr-only">Search Ticket ID</label>
               <input
+                id="ticket-search-input"
                 type="text"
                 value={reportIdInput}
                 onChange={(e) => setReportIdInput(e.target.value)}
                 placeholder="Enter Ticket ID (e.g. CF-104)..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-white font-mono text-xs"
-                aria-label="Search Ticket ID"
+                aria-label="Enter Ticket ID to track"
               />
             </div>
             <button
               type="submit"
+              aria-label="Track Ticket by ID"
               className="px-6 py-2.5 rounded-xl bg-white text-black font-mono text-xs font-bold hover:bg-neutral-200 transition shadow-[0_2px_8px_rgba(255,255,255,0.2)]"
             >
               Track Ticket
@@ -126,11 +134,13 @@ export default function TrackPage() {
           </form>
 
           {/* Quick-Select Sample Tickets */}
-          <div className="flex flex-wrap items-center gap-2 mt-3.5 pt-3 border-t border-white/10 text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-2 mt-3.5 pt-3 border-t border-white/10 text-xs font-mono" role="group" aria-label="Sample Tickets Quick Selector">
             <span className="text-neutral-500">Sample Tickets:</span>
             {sampleTickets.map((tId) => (
               <button
                 key={tId}
+                type="button"
+                aria-label={`Select sample ticket #${tId}`}
                 onClick={() => {
                   setReportIdInput(tId);
                   const found = reports.find((r) => r.id === tId);
@@ -148,15 +158,22 @@ export default function TrackPage() {
           </div>
 
           {searchError && (
-            <div className="mt-3 p-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono">
+            <div
+              role="alert"
+              aria-live="polite"
+              className="mt-3 p-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-mono"
+            >
               {searchError}
             </div>
           )}
-        </div>
+        </section>
 
         {/* Selected Ticket Details & Timeline */}
         {currentReport && (
-          <div className="rounded-2xl border border-white/15 bg-neutral-950 p-6 sm:p-8 shadow-3d-card flex flex-col gap-6 reticle-corner-white">
+          <article
+            aria-labelledby="ticket-detail-title"
+            className="rounded-2xl border border-white/15 bg-neutral-950 p-6 sm:p-8 shadow-3d-card flex flex-col gap-6 reticle-corner-white"
+          >
             {/* Header Meta */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>
@@ -168,7 +185,7 @@ export default function TrackPage() {
                     {currentReport.category}
                   </span>
                 </div>
-                <h2 className="text-base font-semibold text-white mt-1">
+                <h2 id="ticket-detail-title" className="text-base font-semibold text-white mt-1">
                   {currentReport.title}
                 </h2>
                 <p className="text-xs text-neutral-400 font-mono mt-0.5">
@@ -192,11 +209,11 @@ export default function TrackPage() {
               <div className="font-mono text-xs text-neutral-400 uppercase tracking-wider mb-4 font-bold">
                 Resolution Timeline
               </div>
-              <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+              <ol className="relative flex flex-col sm:flex-row justify-between gap-4" aria-label="Work Order Progress Steps">
                 {steps.map((step, idx) => {
                   const status = getStepStatus(step.key, currentReport.status);
                   return (
-                    <div key={step.key} className="flex-1 flex flex-col items-start sm:items-center text-left sm:text-center">
+                    <li key={step.key} className="flex-1 flex flex-col items-start sm:items-center text-left sm:text-center">
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center font-mono text-xs font-bold mb-2 transition ${
                           status === "COMPLETED"
@@ -205,15 +222,16 @@ export default function TrackPage() {
                             ? "bg-neutral-800 text-white border-2 border-white animate-pulse"
                             : "bg-black border border-white/15 text-neutral-600"
                         }`}
+                        aria-hidden="true"
                       >
-                        {status === "COMPLETED" ? <CheckCircle2 className="w-4 h-4 text-black" /> : idx + 1}
+                        {status === "COMPLETED" ? <CheckCircle2 className="w-4 h-4 text-black" aria-hidden="true" /> : idx + 1}
                       </div>
                       <div className="text-xs font-bold text-white font-mono">{step.label}</div>
                       <div className="text-[10px] text-neutral-400 font-sans mt-0.5">{step.desc}</div>
-                    </div>
+                    </li>
                   );
                 })}
-              </div>
+              </ol>
             </div>
 
             {/* Crew & Dispatch Notes */}
@@ -245,7 +263,7 @@ export default function TrackPage() {
             {/* Duplicate Community Corroboration */}
             {currentReport.duplicate_count && currentReport.duplicate_count > 1 ? (
               <div className="rounded-xl bg-neutral-900 border border-white/20 p-4 text-xs font-mono text-neutral-300 flex items-start gap-3 shadow-3d-subtle">
-                <GitMerge className="w-5 h-5 text-white shrink-0 mt-0.5" />
+                <GitMerge className="w-5 h-5 text-white shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
                   <strong className="text-white">
                     Campus Corroboration Active ({currentReport.duplicate_count} Linked Student Reports):
@@ -266,7 +284,7 @@ export default function TrackPage() {
                 {currentReport.ai_explanation}
               </p>
             </div>
-          </div>
+          </article>
         )}
       </main>
     </>

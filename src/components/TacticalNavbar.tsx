@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
-  Wrench,
   Radio,
   MapPin,
   FileText,
-  Activity,
   Layers,
   Sparkles,
   ChevronDown,
@@ -14,7 +12,6 @@ import {
   RefreshCw,
   Cpu,
   Building2,
-  AlertCircle,
 } from "lucide-react";
 
 interface TacticalNavbarProps {
@@ -28,6 +25,10 @@ interface TacticalNavbarProps {
   onTriggerDemoStep?: (step: number) => void;
 }
 
+/**
+ * Tactical monochrome operations navbar with 5-minute judge demo flow bar,
+ * live telemetry indicators, and fast navigation between lifecycle stages.
+ */
 export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
   kpis = { totalReports: 36, criticalCount: 14, activeHotspots: 3, duplicatesDetected: 16 },
   onResetData,
@@ -47,8 +48,8 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
         } else {
           router.reload();
         }
-      } catch (err) {
-        console.error("Reset error:", err);
+      } catch {
+        // Silently handle reset error on client
       } finally {
         setResetting(false);
       }
@@ -69,7 +70,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white text-black font-mono font-bold tracking-wider text-[11px] uppercase shadow-[0_2px_8px_rgba(255,255,255,0.25)]">
-              <Sparkles className="w-3 h-3 text-black animate-spin" />
+              <Sparkles className="w-3 h-3 text-black animate-spin" aria-hidden="true" />
               5-Min Judge Demo Flow
             </span>
             <span className="hidden md:inline text-neutral-400 text-xs font-sans">
@@ -85,18 +86,19 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
               aria-label="Toggle Judge Demo Banner"
             >
               <span>{demoBannerOpen ? "Hide Steps" : "Show Steps"}</span>
-              {demoBannerOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              {demoBannerOpen ? <ChevronUp className="w-3.5 h-3.5" aria-hidden="true" /> : <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />}
             </button>
           </div>
         </div>
 
         {demoBannerOpen && (
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-3 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-2 border-t border-white/5">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-3 pt-1 grid grid-cols-2 lg:grid-cols-4 gap-2 border-t border-white/5" role="group" aria-label="Demo Flow Steps">
             <button
               onClick={() => {
                 if (onTriggerDemoStep) onTriggerDemoStep(1);
                 else router.push("/report?demo=true");
               }}
+              aria-label="Step 1: Capture - Auto-Fill Science Lab Water Leak & Arcing Outlet"
               className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
               <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
@@ -113,6 +115,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
                 if (onTriggerDemoStep) onTriggerDemoStep(2);
                 else router.push("/?filter=CRITICAL");
               }}
+              aria-label="Step 2: Understand - Inspect 98/100 Risk Score & Duplicate Link"
               className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
               <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
@@ -129,6 +132,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
                 if (onTriggerDemoStep) onTriggerDemoStep(3);
                 else router.push("/?cluster=HOTSPOT-1");
               }}
+              aria-label="Step 3: Reveal - Trigger 60s Science Block Maintenance Brief"
               className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
               <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
@@ -145,6 +149,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
                 if (onTriggerDemoStep) onTriggerDemoStep(4);
                 else router.push("/track?id=CF-104");
               }}
+              aria-label="Step 4: Act - Dispatch Units & Track Student Timeline"
               className="text-left p-2.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-850 border border-white/10 hover:border-white/30 transition group shadow-3d-subtle"
             >
               <div className="flex items-center justify-between text-[11px] font-mono text-white mb-1">
@@ -163,9 +168,9 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand Identity */}
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-3 group" aria-label="CampusFix Home">
             <div className="w-9 h-9 rounded-lg bg-white text-black flex items-center justify-center font-bold shadow-[0_4px_14px_rgba(255,255,255,0.3)] group-hover:scale-105 transition-transform">
-              <Building2 className="w-5 h-5 text-black" />
+              <Building2 className="w-5 h-5 text-black" aria-hidden="true" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -184,7 +189,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
         </div>
 
         {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 bg-neutral-950 p-1 rounded-lg border border-white/10">
+        <nav className="hidden md:flex items-center gap-1 bg-neutral-950 p-1 rounded-lg border border-white/10" aria-label="Main Navigation">
           {navItems.map((item) => {
             const isActive = router.pathname === item.href;
             const Icon = item.icon;
@@ -199,7 +204,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
                 }`}
                 aria-current={isActive ? "page" : undefined}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-black" : "text-neutral-400"}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-black" : "text-neutral-400"}`} aria-hidden="true" />
                 {item.label}
               </Link>
             );
@@ -210,7 +215,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
         <div className="flex items-center gap-3">
           {/* AI Engine Status Badge */}
           <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded bg-neutral-950 border border-white/10 text-xs font-mono">
-            <Cpu className="w-3.5 h-3.5 text-white animate-pulse" />
+            <Cpu className="w-3.5 h-3.5 text-white animate-pulse" aria-hidden="true" />
             <span className="text-neutral-400">AI:</span>
             <span className="text-white font-medium">Gemini 2.5 Flash</span>
           </div>
@@ -218,7 +223,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
           {/* Quick Metrics */}
           <div className="hidden sm:flex items-center gap-2.5 font-mono text-xs text-neutral-400 bg-neutral-950 px-2.5 py-1 rounded border border-white/10">
             <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              <span className="w-2 h-2 rounded-full bg-white animate-ping" aria-hidden="true" />
               <span className="text-white font-bold">{kpis.criticalCount}</span>
               <span className="text-[10px]">CRITICAL</span>
             </div>
@@ -237,7 +242,7 @@ export const TacticalNavbar: React.FC<TacticalNavbarProps> = ({
             title="Reset to 36 baseline synthetic campus reports"
             aria-label="Reset operational state to 36 reports"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-white" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-white" : ""}`} aria-hidden="true" />
             <span className="hidden sm:inline">Reset Baseline</span>
           </button>
         </div>

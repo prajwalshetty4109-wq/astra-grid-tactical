@@ -5,20 +5,30 @@ import { getSupabaseClient } from "./supabase";
 // Global singleton in-memory fallback store across serverless function re-uses
 declare global {
   // eslint-disable-next-line no-var
-  var __ASTRA_REPORTS_STORE__: CivicReport[] | undefined;
+  var __CAMPUS_REPORTS_STORE__: CivicReport[] | undefined;
 }
 
 function cloneInitialReports(): CivicReport[] {
   return JSON.parse(JSON.stringify(INITIAL_SYNTHETIC_REPORTS));
 }
 
+/**
+ * Retrieves the global in-memory report store, initializing it with 36 baseline synthetic reports if empty.
+ *
+ * @returns CivicReport[] array of reports
+ */
 export function getInMemoryStore(): CivicReport[] {
-  if (!global.__ASTRA_REPORTS_STORE__ || global.__ASTRA_REPORTS_STORE__.length === 0) {
-    global.__ASTRA_REPORTS_STORE__ = cloneInitialReports();
+  if (!global.__CAMPUS_REPORTS_STORE__ || global.__CAMPUS_REPORTS_STORE__.length === 0) {
+    global.__CAMPUS_REPORTS_STORE__ = cloneInitialReports();
   }
-  return global.__ASTRA_REPORTS_STORE__;
+  return global.__CAMPUS_REPORTS_STORE__;
 }
 
+/**
+ * Fetches all active campus facility reports, querying Supabase if available or falling back to in-memory store.
+ *
+ * @returns Promise<CivicReport[]>
+ */
 export async function fetchAllReports(): Promise<CivicReport[]> {
   const supabase = getSupabaseClient();
   if (supabase) {
@@ -29,7 +39,6 @@ export async function fetchAllReports(): Promise<CivicReport[]> {
         .order("created_at", { ascending: false });
 
       if (!error && data && data.length > 0) {
-        // Map database numeric fields if necessary
         return data.map((row) => ({
           ...row,
           latitude: Number(row.latitude),
@@ -39,14 +48,20 @@ export async function fetchAllReports(): Promise<CivicReport[]> {
           duplicate_similarity: Number(row.duplicate_similarity || 0),
         })) as CivicReport[];
       }
-    } catch (err) {
-      console.warn("Supabase fetch failed, falling back to in-memory store:", err);
+    } catch {
+      // Graceful fallback to in-memory store
     }
   }
 
   return getInMemoryStore();
 }
 
+/**
+ * Saves a newly submitted campus facility report to the operational store.
+ *
+ * @param report CivicReport object to store
+ * @returns Promise<CivicReport>
+ */
 export async function saveNewReport(report: CivicReport): Promise<CivicReport> {
   const store = getInMemoryStore();
   // Prepend to in-memory store
@@ -56,14 +71,21 @@ export async function saveNewReport(report: CivicReport): Promise<CivicReport> {
   if (supabase) {
     try {
       await supabase.from("civic_reports").insert([report]);
-    } catch (err) {
-      console.warn("Supabase insert skipped or failed:", err);
+    } catch {
+      // Graceful fallback to in-memory store
     }
   }
 
   return report;
 }
 
+/**
+ * Updates the workflow state (status, assigned department, dispatch notes) of a campus report.
+ *
+ * @param reportId ID of report to update
+ * @param updates Partial status and dispatch attributes
+ * @returns Promise<CivicReport | null>
+ */
 export async function updateReportWorkflow(
   reportId: string,
   updates: {
@@ -95,14 +117,22 @@ export async function updateReportWorkflow(
           updated_at: updated.updated_at,
         })
         .eq("id", reportId);
-    } catch (err) {
-      console.warn("Supabase update skipped or failed:", err);
+    } catch {
+      // Supabase update skipped
     }
   }
 
   return updated;
 }
 
+/**
+ * Merges a duplicate student report into a primary master ticket,
+ * boosting the primary ticket's volume factor score and updating the duplicate record.
+ *
+ * @param duplicateReportId ID of child duplicate ticket
+ * @param primaryReportId ID of master primary ticket
+ * @returns Promise<{ updatedDuplicate: CivicReport; updatedPrimary: CivicReport } | null>
+ */
 export async function mergeDuplicateReports(
   duplicateReportId: string,
   primaryReportId: string
@@ -155,25 +185,29 @@ export async function mergeDuplicateReports(
           updated_at: updatedDuplicate.updated_at,
         })
         .eq("id", duplicateReportId);
-    } catch (err) {
-      console.warn("Supabase merge updates skipped or failed:", err);
+    } catch {
+      // Supabase update skipped
     }
   }
 
   return { updatedDuplicate, updatedPrimary };
 }
 
+/**
+ * Resets the operational reports dataset back to the 36 baseline synthetic reports.
+ *
+ * @returns Promise<void>
+ */
 export async function resetAllReports(): Promise<void> {
-  global.__ASTRA_REPORTS_STORE__ = cloneInitialReports();
+  global.__CAMPUS_REPORTS_STORE__ = cloneInitialReports();
 
   const supabase = getSupabaseClient();
   if (supabase) {
     try {
       await supabase.from("civic_reports").delete().neq("id", "placeholder");
-      await supabase.from("civic_reports").insert(global.__ASTRA_REPORTS_STORE__);
-    } catch (err) {
-      console.warn("Supabase reset skipped or failed:", err);
+      await supabase.from("civic_reports").insert(global.__CAMPUS_REPORTS_STORE__);
+    } catch {
+      // Supabase reset skipped
     }
   }
 }
-

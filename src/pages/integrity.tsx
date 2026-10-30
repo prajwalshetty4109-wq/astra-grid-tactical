@@ -4,29 +4,34 @@ import { TacticalNavbar } from "@/components/TacticalNavbar";
 import {
   ShieldCheck,
   AlertTriangle,
-  Cpu,
-  Layers,
   Sparkles,
-  GitMerge,
-  Building2,
   Database,
   Calculator,
 } from "lucide-react";
 
+/**
+ * AI Methodology, Limitations & Operational Honesty Matrix Page.
+ * Documents production-ready vs. synthetic elements, mathematical priority scoring equations,
+ * known AI failure modes, and mitigation strategies.
+ */
 export default function IntegrityPage() {
   return (
     <>
       <Head>
         <title>AI Methodology, Limitations & Honesty Note | CampusFix</title>
+        <meta
+          name="description"
+          content="CampusFix AI Methodology, Mathematical Priority Formulas, Honesty Matrix, and Technical Limitations."
+        />
       </Head>
 
       <TacticalNavbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8">
+      <main id="main-content" role="main" tabIndex={-1} className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8">
         {/* Header */}
         <div className="border-b border-white/10 pb-4">
           <div className="flex items-center gap-2 text-white font-mono text-xs uppercase tracking-wider mb-1 font-semibold">
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4" aria-hidden="true" />
             Methodology & Ethical AI Compliance • Hackathon Sections 7 & 8
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
@@ -40,7 +45,7 @@ export default function IntegrityPage() {
         {/* Section 1: Real vs Mocked Matrix */}
         <section aria-labelledby="real-vs-mocked" className="flex flex-col gap-3">
           <h2 id="real-vs-mocked" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <Database className="w-4 h-4 text-white" />
+            <Database className="w-4 h-4 text-white" aria-hidden="true" />
             1. Production Reality vs. Synthetic Hackathon Modeling
           </h2>
 
@@ -48,7 +53,7 @@ export default function IntegrityPage() {
             {/* What is Real */}
             <div className="rounded-2xl border border-white/20 bg-neutral-950 p-6 flex flex-col gap-3 shadow-3d-card">
               <div className="flex items-center gap-2 text-white font-mono text-xs font-bold uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4" aria-hidden="true" />
                 What is Real & Production-Executed
               </div>
               <ul className="text-xs text-neutral-300 font-sans space-y-2.5 leading-relaxed">
@@ -73,7 +78,7 @@ export default function IntegrityPage() {
             {/* What is Mocked / Synthetic */}
             <div className="rounded-2xl border border-white/20 bg-neutral-950 p-6 flex flex-col gap-3 shadow-3d-card">
               <div className="flex items-center gap-2 text-white font-mono text-xs font-bold uppercase tracking-wider">
-                <AlertTriangle className="w-4 h-4" />
+                <AlertTriangle className="w-4 h-4" aria-hidden="true" />
                 What is Synthetic / Simulated
               </div>
               <ul className="text-xs text-neutral-300 font-sans space-y-2.5 leading-relaxed">
@@ -94,7 +99,7 @@ export default function IntegrityPage() {
         {/* Section 2: Transparent Priority Formula */}
         <section aria-labelledby="priority-formula" className="flex flex-col gap-3">
           <h2 id="priority-formula" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <Calculator className="w-4 h-4 text-white" />
+            <Calculator className="w-4 h-4 text-white" aria-hidden="true" />
             2. The Explainable Priority Formula (0 to 100)
           </h2>
 
@@ -138,7 +143,7 @@ export default function IntegrityPage() {
         {/* Section 3: Where the AI Can Be Wrong */}
         <section aria-labelledby="ai-failure-modes" className="flex flex-col gap-3">
           <h2 id="ai-failure-modes" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-white" />
+            <AlertTriangle className="w-4 h-4 text-white" aria-hidden="true" />
             3. Where the AI Can Be Wrong (Failure Modes & Mitigations)
           </h2>
 
@@ -183,7 +188,7 @@ export default function IntegrityPage() {
         {/* Section 4: What We Would Build Next */}
         <section aria-labelledby="roadmap" className="flex flex-col gap-3">
           <h2 id="roadmap" className="font-mono text-base font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-white" />
+            <Sparkles className="w-4 h-4 text-white" aria-hidden="true" />
             4. Production Roadmap: What We Would Build Next
           </h2>
 

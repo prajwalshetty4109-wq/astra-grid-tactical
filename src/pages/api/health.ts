@@ -1,12 +1,24 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { isGeminiConfigured } from "@/lib/gemini";
+import { applySecurityGuard } from "@/lib/security";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+/**
+ * Health check and runtime telemetry status handler for CampusFix operations.
+ *
+ * @param req Next.js API Request
+ * @param res Next.js API Response
+ */
+export default function handler(req: NextApiRequest, res: NextApiResponse): void {
+  if (
+    applySecurityGuard(req, res, {
+      allowedMethods: ["GET"],
+      skipRateLimit: false,
+    })
+  ) {
+    return;
   }
 
-  return res.status(200).json({
+  res.status(200).json({
     status: "OK",
     service: "campusfix",
     googleGenAiReady: isGeminiConfigured(),

@@ -1,13 +1,9 @@
 import React, { useState, useMemo, useRef } from "react";
 import { CivicReport, HotspotCluster } from "@/lib/validators";
 import {
-  Crosshair,
-  Layers,
   AlertTriangle,
   Zap,
   Building2,
-  Maximize2,
-  Compass,
 } from "lucide-react";
 
 interface GeospatialHotspotMapProps {
@@ -19,6 +15,11 @@ interface GeospatialHotspotMapProps {
   onSelectCluster: (cluster: HotspotCluster) => void;
 }
 
+/**
+ * Stage 3 (Reveal) Geospatial 3D Campus Blueprint Map.
+ * Renders SVG isometric campus buildings, duplicate link vectors,
+ * active multi-issue hotspot clusters, and interactive incident pins with priority badges.
+ */
 export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
   reports,
   clusters,
@@ -73,12 +74,12 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
 
   // Campus Building Blocks with coordinates and 3D architectural profiles
   const campusBuildings = [
-    { name: "Science Block Wing B", lat: 12.9756, lon: 77.6068, code: "SCI-01", floors: "4F Lab Wing" },
-    { name: "Central Library Commons", lat: 12.9251, lon: 77.5938, code: "LIB-02", floors: "3F Study Wing" },
-    { name: "Student Dorms Block C", lat: 13.0358, lon: 77.5970, code: "RES-03", floors: "5F Residential" },
-    { name: "Engineering Wing", lat: 12.9784, lon: 77.6408, code: "ENG-04", floors: "3F Classrooms" },
-    { name: "Main Cafeteria", lat: 12.9352, lon: 77.6245, code: "CAF-05", floors: "2F Dining Hall" },
-    { name: "Admin Hub", lat: 12.9841, lon: 77.7521, code: "ADM-06", floors: "2F Services" },
+    { name: "Science Block Wing B", lat: 12.9756, lon: 77.6068, code: "SCI-01" },
+    { name: "Central Library Commons", lat: 12.9251, lon: 77.5938, code: "LIB-02" },
+    { name: "Student Dorms Block C", lat: 13.0358, lon: 77.5970, code: "RES-03" },
+    { name: "Engineering Wing", lat: 12.9784, lon: 77.6408, code: "ENG-04" },
+    { name: "Main Cafeteria", lat: 12.9352, lon: 77.6245, code: "CAF-05" },
+    { name: "Admin Hub", lat: 12.9841, lon: 77.7521, code: "ADM-06" },
   ];
 
   return (
@@ -91,7 +92,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
       <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/90 border-b border-white/10 z-10 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-white" />
+            <Building2 className="w-4 h-4 text-white" aria-hidden="true" />
             <h2 className="font-mono text-sm font-bold tracking-wider text-white">
               CAMPUS 3D BLUEPRINT <span className="text-neutral-400 text-xs">[ACTIVE TELEMETRY]</span>
             </h2>
@@ -102,8 +103,10 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
         </div>
 
         {/* Layer Filters */}
-        <div className="flex items-center gap-1.5 bg-black p-1 rounded-lg border border-white/10 text-xs font-mono">
+        <div className="flex items-center gap-1.5 bg-black p-1 rounded-lg border border-white/10 text-xs font-mono" role="group" aria-label="Map Layer Filters">
           <button
+            type="button"
+            aria-label={`Show all reports (${reports.length})`}
             onClick={() => setActiveLayer("ALL")}
             className={`px-2.5 py-1 rounded transition ${
               activeLayer === "ALL"
@@ -114,6 +117,8 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
             All ({reports.length})
           </button>
           <button
+            type="button"
+            aria-label="Filter critical hazard reports"
             onClick={() => setActiveLayer("CRITICAL")}
             className={`px-2.5 py-1 rounded transition flex items-center gap-1 ${
               activeLayer === "CRITICAL"
@@ -121,10 +126,12 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                 : "text-neutral-400 hover:text-white"
             }`}
           >
-            <AlertTriangle className="w-3 h-3" />
+            <AlertTriangle className="w-3 h-3" aria-hidden="true" />
             Critical
           </button>
           <button
+            type="button"
+            aria-label={`Filter building clusters (${clusters.length})`}
             onClick={() => setActiveLayer("CLUSTERS")}
             className={`px-2.5 py-1 rounded transition flex items-center gap-1 ${
               activeLayer === "CLUSTERS"
@@ -132,10 +139,12 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                 : "text-neutral-400 hover:text-white"
             }`}
           >
-            <Zap className="w-3 h-3" />
+            <Zap className="w-3 h-3" aria-hidden="true" />
             Clusters ({clusters.length})
           </button>
           <button
+            type="button"
+            aria-label="Filter duplicate reports"
             onClick={() => setActiveLayer("DUPLICATES")}
             className={`px-2.5 py-1 rounded transition ${
               activeLayer === "DUPLICATES"
@@ -154,9 +163,12 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
           viewBox="0 0 1000 600"
           className="w-full h-full cursor-crosshair"
           preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label="Geospatial interactive 3D map showing campus facilities and active crisis hotspots"
         >
+          <title>Campus 3D Blueprint Map</title>
           {/* Subtle 3D Isometric Coordinate Grid lines */}
-          <g className="opacity-15 pointer-events-none" stroke="#FFFFFF" strokeWidth="0.75" fill="none">
+          <g className="opacity-15 pointer-events-none" stroke="#FFFFFF" strokeWidth="0.75" fill="none" aria-hidden="true">
             <line x1="500" y1="20" x2="500" y2="580" strokeDasharray="4,4" />
             <line x1="50" y1="300" x2="950" y2="300" strokeDasharray="4,4" />
             <circle cx="500" cy="300" r="120" strokeDasharray="2,4" />
@@ -167,7 +179,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
           {campusBuildings.map((bldg) => {
             const pos = project(bldg.lat, bldg.lon);
             return (
-              <g key={bldg.code} className="pointer-events-none">
+              <g key={bldg.code} className="pointer-events-none" aria-hidden="true">
                 {/* 3D Extruded Building Block Shadow */}
                 <rect
                   x={pos.x - 38}
@@ -217,7 +229,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
 
           {/* Duplicate Link Vectors */}
           {(activeLayer === "ALL" || activeLayer === "DUPLICATES") && (
-            <g className="duplicate-links">
+            <g className="duplicate-links" aria-hidden="true">
               {reports.map((report) => {
                 if (!report.duplicate_of_id) return null;
                 const parent = reports.find((r) => r.id === report.duplicate_of_id);
@@ -245,7 +257,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
 
           {/* Hotspot Building Clusters */}
           {(activeLayer === "ALL" || activeLayer === "CLUSTERS") && (
-            <g className="clusters">
+            <g className="clusters" aria-label="Campus Building Hotspot Clusters">
               {clusters.map((cluster) => {
                 const pos = project(cluster.centroid.latitude, cluster.centroid.longitude);
                 const isSelected = selectedClusterId === cluster.id;
@@ -255,6 +267,14 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                   <g
                     key={cluster.id}
                     onClick={() => onSelectCluster(cluster)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Cluster ${cluster.id}: ${cluster.title}, composite risk score ${cluster.compositeRiskScore}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        onSelectCluster(cluster);
+                      }
+                    }}
                     className="cursor-pointer group"
                   >
                     {/* Multi-layered 3D cluster boundary */}
@@ -297,7 +317,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
           )}
 
           {/* Incident Pins */}
-          <g className="report-pins">
+          <g className="report-pins" aria-label="Campus Incident Pins">
             {filteredReports.map((report) => {
               const pos = project(report.latitude, report.longitude);
               const isSelected = selectedReport?.id === report.id;
@@ -308,6 +328,14 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                   key={report.id}
                   transform={`translate(${pos.x}, ${pos.y})`}
                   onClick={() => onSelectReport(report)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Report #${report.id}: ${report.title}, priority ${report.priority_score}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      onSelectReport(report);
+                    }
+                  }}
                   onMouseEnter={() => setHoveredReport(report)}
                   onMouseLeave={() => setHoveredReport(null)}
                   className="cursor-pointer transition-transform hover:scale-125"
@@ -322,6 +350,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                       strokeDasharray="2,2"
                       className="animate-spin"
                       style={{ animationDuration: "8s" }}
+                      aria-hidden="true"
                     />
                   )}
 
@@ -331,6 +360,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                     fill={isCritical ? "#FFFFFF" : isSelected ? "#FFFFFF" : "#737373"}
                     stroke="#000000"
                     strokeWidth="1.5"
+                    aria-hidden="true"
                   />
 
                   {/* Score Label if Critical */}
@@ -343,6 +373,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                       fontWeight="bold"
                       fontFamily="JetBrains Mono, monospace"
                       textAnchor="middle"
+                      aria-hidden="true"
                     >
                       {report.priority_score}
                     </text>
@@ -355,7 +386,7 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
 
         {/* 3D Popover for Hover/Selection */}
         {(hoveredReport || selectedReport) && (
-          <div className="absolute bottom-4 left-4 max-w-sm rounded-xl bg-neutral-950/95 border border-white/20 p-3.5 shadow-3d-card backdrop-blur-md z-20 reticle-corner-white">
+          <aside aria-label="Selected incident preview" className="absolute bottom-4 left-4 max-w-sm rounded-xl bg-neutral-950/95 border border-white/20 p-3.5 shadow-3d-card backdrop-blur-md z-20 reticle-corner-white">
             {(() => {
               const r = hoveredReport || selectedReport!;
               const isCrit = r.priority_level === "CRITICAL";
@@ -388,31 +419,31 @@ export const GeospatialHotspotMap: React.FC<GeospatialHotspotMapProps> = ({
                 </div>
               );
             })()}
-          </div>
+          </aside>
         )}
 
         {/* Map Legend */}
-        <div className="absolute bottom-4 right-4 bg-black/90 border border-white/15 p-3 rounded-xl text-[10px] font-mono text-neutral-300 flex flex-col gap-1.5 shadow-3d-card backdrop-blur-md">
+        <aside aria-label="Priority Score Legend" className="absolute bottom-4 right-4 bg-black/90 border border-white/15 p-3 rounded-xl text-[10px] font-mono text-neutral-300 flex flex-col gap-1.5 shadow-3d-card backdrop-blur-md">
           <div className="text-neutral-400 font-bold uppercase tracking-wider text-[9px] mb-0.5">
             PRIORITY MATRIX
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-white border border-neutral-400" />
+            <span className="w-2.5 h-2.5 rounded-full bg-white border border-neutral-400" aria-hidden="true" />
             <span>CRITICAL (&ge; 80 pts)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-neutral-400" />
+            <span className="w-2.5 h-2.5 rounded-full bg-neutral-400" aria-hidden="true" />
             <span>HIGH (65–79 pts)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
+            <span className="w-2.5 h-2.5 rounded-full bg-neutral-600" aria-hidden="true" />
             <span>MEDIUM (40–64 pts)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-neutral-800" />
+            <span className="w-2.5 h-2.5 rounded-full bg-neutral-800" aria-hidden="true" />
             <span>LOW / RESOLVED (&lt; 40)</span>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );
